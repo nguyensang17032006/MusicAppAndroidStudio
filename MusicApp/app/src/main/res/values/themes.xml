@@ -1,0 +1,27 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.MusicAppDemo" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/P40</item>
+        <item name="colorSecondary">@color/S40</item>
+        <item name="colorTertiary">@color/T40</item>
+        
+        <!-- Đổi màu thanh trạng thái (Status Bar) -->
+        <item name="android:statusBarColor">@color/P10</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="Theme.MusicAppDemo" parent="Base.Theme.MusicAppDemo" />
+
+    <style name="AppTextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">#242424</item>
+        <item name="boxStrokeColor">@color/P50</item>
+        <!-- Màu của hint khi bay lên trên (khi nhấn vào) -->
+        <item name="hintTextColor">@color/P40</item>
+        <item name="android:textColorHint">@color/S40</item>
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+    </style>
+</resources>
