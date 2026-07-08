@@ -61,11 +61,8 @@ const verifyAndRegister = async (req, res) => {
 
         // BƯỚC C: Lưu thông tin vào MySQL
         const query = `INSERT INTO users (id, email, gender) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE email=email`;
-        db.query(query, [supabaseUser.id, email, gender || null], (err, result) => {
-            if (err) {
-                console.error("Lỗi MySQL:", err);
-                return res.status(500).json({ success: false, message: "Lỗi lưu database MySQL." });
-            }
+        try {
+            await db.query(query, [supabaseUser.id, email, gender || null]);
 
             // Trả về dữ liệu sạch sẽ cho Android parse thành AuthResponse.java
             return res.status(201).json({
@@ -81,7 +78,10 @@ const verifyAndRegister = async (req, res) => {
                     gender: supabaseUser.gender
                 }
             });
-        });
+        } catch (err) {
+            console.error("Lỗi MySQL:", err);
+            return res.status(500).json({ success: false, message: "Lỗi lưu database MySQL." });
+        }
 
     } catch (err) {
         return res.status(500).json({ success: false, message: err.message });
