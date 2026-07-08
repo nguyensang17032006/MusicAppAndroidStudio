@@ -14,6 +14,7 @@ public class AuthResponse {
     @SerializedName("user")
     public SupabaseUser user;
 
+
     public boolean hasSession() {
         return accessToken != null && !accessToken.isEmpty();
     }

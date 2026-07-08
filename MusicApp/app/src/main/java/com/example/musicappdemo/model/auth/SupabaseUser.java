@@ -7,6 +7,8 @@ public class SupabaseUser {
     private String id;
     @SerializedName("email")
     private String email;
+    @SerializedName("gender")
+    private String gender;
     @SerializedName("email_confirmed_at")
     private String emailConfirmedAt;
     @SerializedName("last_sign_in_at")
@@ -17,12 +19,13 @@ public class SupabaseUser {
     public SupabaseUser() {
     }
 
-    public SupabaseUser(String id, String email, String emailConfirmedAt, String lastSignInAt, String createdAt) {
+    public SupabaseUser(String id, String email, String emailConfirmedAt, String lastSignInAt, String createdAt,String gender) {
         this.id = id;
         this.email = email;
         this.emailConfirmedAt = emailConfirmedAt;
         this.lastSignInAt = lastSignInAt;
         this.createdAt = createdAt;
+        this.gender = gender;
     }
 
     public String getId() {
@@ -39,6 +42,14 @@ public class SupabaseUser {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
     public String getEmailConfirmedAt() {

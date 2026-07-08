@@ -1,0 +1,18 @@
+# Dependency directories (Thư mục thư viện - Rất nặng)
+node_modules/
+
+# Environment variables (File cấu hình bảo mật - Tuyệt đối không push)
+.env
+.env.local
+.env.*.local
+
+# Logs (Các file log hệ thống khi chạy lỗi)
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Các file hệ thống của hệ điều hành (Tự động sinh ra tùy máy)
+.DS_Store
+Thumbs.db
