@@ -17,31 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintEnd_toStartOf="@+id/btn_settings"
-        app:layout_constraintStart_toEndOf="@+id/btn_collapse"
-        app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="PLAYING FROM COURSE"
-            android:textColor="@color/S60"
-            android:textSize="10sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Android Development Masterclass"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-    </LinearLayout>
 
     <ImageView
         android:id="@+id/btn_settings"
@@ -154,14 +130,17 @@
 
     <!-- Controls -->
     <LinearLayout
+        android:id="@+id/controls_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/time_container">
+        app:layout_constraintBottom_toTopOf="@+id/rv_playlist"
+        app:layout_constraintTop_toBottomOf="@+id/time_container"
+        android:layout_marginBottom="16dp">
 
         <ImageView
+            android:id="@+id/btn_shuffle"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:layout_weight="1"
@@ -169,6 +148,7 @@
             app:tint="@color/white" />
 
         <ImageView
+            android:id="@+id/btn_previous"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_weight="1"
@@ -187,6 +167,7 @@
             app:tint="@color/black" />
 
         <ImageView
+            android:id="@+id/btn_next"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_weight="1"
@@ -194,6 +175,7 @@
             app:tint="@color/white" />
 
         <ImageView
+            android:id="@+id/btn_repeat"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:layout_weight="1"
@@ -201,5 +183,15 @@
             app:tint="@color/white" />
 
     </LinearLayout>
+
+    <!-- Playlist -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_playlist"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/controls_container"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

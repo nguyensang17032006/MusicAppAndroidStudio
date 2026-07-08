@@ -6,17 +6,27 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+
+import com.example.musicappdemo.adapter.FeaturedSongAdapter;
 import com.example.musicappdemo.adapter.SongAdapter;
 import com.example.musicappdemo.databinding.FragmentHomeBinding;
 import com.example.musicappdemo.model.Song;
+import com.example.musicappdemo.network.ApiResponse;
 import com.example.musicappdemo.network.RetrofitClient;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import retrofit2.Call;
@@ -32,6 +42,7 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
 
+        setupRecyclerViews();
         fetchSongs();
 
         binding.btnProfile.setOnClickListener(v -> {
@@ -41,21 +52,62 @@ public class HomeFragment extends Fragment {
         return binding.getRoot();
     }
 
+    private void setupRecyclerViews() {
+        binding.rvFeaturedSongs.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+    }
+
+    public static void setListViewHeightBasedOnChildren(ListView listView) {
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null) return;
+
+        int totalHeight = 0;
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.AT_MOST);
+        for (int i = 0; i < listAdapter.getCount(); i++) {
+            View listItem = listAdapter.getView(i, null, listView);
+            listItem.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+            totalHeight += listItem.getMeasuredHeight();
+        }
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        listView.setLayoutParams(params);
+        listView.requestLayout();
+    }
+
     private void fetchSongs() {
-        RetrofitClient.getApiService().getSongs().enqueue(new Callback<List<Song>>() {
+        RetrofitClient.getApiService().getSongs().enqueue(new Callback<ApiResponse<List<Song>>>() {
             @Override
-            public void onResponse(Call<List<Song>> call, Response<List<Song>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<Song> songs = response.body();
-                    SongAdapter adapter = new SongAdapter(getContext(), songs);
-                    binding.lvLatestLessons.setAdapter(adapter);
+            public void onResponse(Call<ApiResponse<List<Song>>> call, Response<ApiResponse<List<Song>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    List<Song> allSongs = response.body().getData();
+                    if (allSongs != null) {
+                        // 1. Bài nhạc mới nhất (Giới hạn 5 bài)
+                        List<Song> latestSongs = new ArrayList<>(allSongs);
+                        // Giả sử bài mới nhất nằm ở cuối list hoặc có thuộc tính ngày tháng, ở đây ta lấy 5 bài đầu/cuối
+                        // Nếu list trả về là mới nhất trước thì lấy 5 bài đầu
+                        if (latestSongs.size() > 5) {
+                            latestSongs = latestSongs.subList(0, 5);
+                        }
+                        SongAdapter latestAdapter = new SongAdapter(getContext(), latestSongs);
+                        binding.lvLatestLessons.setAdapter(latestAdapter);
+                        setListViewHeightBasedOnChildren(binding.lvLatestLessons);
+
+                        // 2. Bài nhạc nghe nhiều (Sắp xếp theo views và lấy 10 bài)
+                        List<Song> featuredSongs = new ArrayList<>(allSongs);
+                        Collections.sort(featuredSongs, (s1, s2) -> Integer.compare(s2.getViews(), s1.getViews()));
+                        if (featuredSongs.size() > 10) {
+                            featuredSongs = featuredSongs.subList(0, 10);
+                        }
+                        FeaturedSongAdapter featuredAdapter = new FeaturedSongAdapter(getContext(), featuredSongs);
+                        binding.rvFeaturedSongs.setAdapter(featuredAdapter);
+                    }
                 } else {
                     Toast.makeText(getContext(), "Không thể lấy dữ liệu", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Song>> call, Throwable t) {
+            public void onFailure(Call<ApiResponse<List<Song>>> call, Throwable t) {
                 Log.e("HomeFragment", "Lỗi API: " + t.getMessage());
                 Toast.makeText(getContext(), "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
             }

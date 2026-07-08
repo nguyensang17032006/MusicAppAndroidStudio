@@ -3,7 +3,10 @@ package com.example.musicappdemo.adapter;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -45,6 +48,9 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
         holder.binding.tvLessonTitle.setText(song.getTitle());
         holder.binding.tvLessonInfo.setText(song.getArtist_names());
 
+        // Ẩn trái tim và dấu 3 chấm khi trong danh sách phát (Player)
+        holder.binding.lessonActions.setVisibility(View.GONE);
+
         if (song.getCover_url() != null && !song.getCover_url().isEmpty()) {
             Glide.with(context).load(song.getCover_url()).into(holder.binding.lessonImg);
         } else {
@@ -59,6 +65,19 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
 
         holder.itemView.setOnClickListener(v -> {
             MusicManager.getInstance().playPlaylist(context, songList, position);
+        });
+
+        holder.binding.btnMore.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(context, holder.binding.btnMore);
+            popupMenu.getMenu().add("Thêm vào danh sách phát");
+            popupMenu.setOnMenuItemClickListener(item -> {
+                if (item.getTitle().equals("Thêm vào danh sách phát")) {
+                    MusicManager.getInstance().addSongToPlaylist(context, song);
+                    Toast.makeText(context, "Đã thêm vào danh sách phát", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            });
+            popupMenu.show();
         });
     }
 

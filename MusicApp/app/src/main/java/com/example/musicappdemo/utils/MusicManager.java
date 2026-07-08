@@ -9,12 +9,20 @@ import android.util.Log;
 import com.example.musicappdemo.model.Song;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MusicManager {
     private static MusicManager instance;
     private MediaPlayer mediaPlayer;
     private Song currentSong;
+    private List<Song> playlist = new ArrayList<>();
+    private List<Song> originalPlaylist = new ArrayList<>();
+    private int currentIndex = -1;
     private OnMusicStatusListener listener;
+
+    private boolean isShuffle = false;
+    private boolean isRepeat = false;
 
     public interface OnMusicStatusListener {
         void onSongChanged(Song song);
@@ -31,12 +39,79 @@ public class MusicManager {
     }
 
     public void playSong(Context context, Song song) {
+        originalPlaylist.clear();
+        originalPlaylist.add(song);
+        playlist.clear();
+        playlist.add(song);
+        currentIndex = 0;
+        playCurrentIndex(context);
+    }
+
+    public void playPlaylist(Context context, List<Song> songs, int index) {
+        this.originalPlaylist = new ArrayList<>(songs);
+        this.playlist = new ArrayList<>(songs);
+        this.currentIndex = index;
+        if (isShuffle) {
+            shufflePlaylist();
+        }
+        playCurrentIndex(context);
+    }
+
+    public void addSongToPlaylist(Context context, Song song) {
+        originalPlaylist.add(song);
+        playlist.add(song);
+        if (playlist.size() == 1) {
+            currentIndex = 0;
+            playCurrentIndex(context);
+        }
+    }
+
+    public void toggleShuffle(Context context) {
+        isShuffle = !isShuffle;
+        if (isShuffle) {
+            shufflePlaylist();
+        } else {
+            Song current = currentSong;
+            playlist = new ArrayList<>(originalPlaylist);
+            if (current != null) {
+                currentIndex = playlist.indexOf(current);
+            }
+        }
+    }
+
+    private void shufflePlaylist() {
+        if (playlist.isEmpty()) return;
+        Song current = currentSong;
+        java.util.Collections.shuffle(playlist);
+        if (current != null) {
+            playlist.remove(current);
+            playlist.add(0, current);
+            currentIndex = 0;
+        }
+    }
+
+    public void toggleRepeat() {
+        isRepeat = !isRepeat;
+    }
+
+    public boolean isShuffle() { return isShuffle; }
+    public boolean isRepeat() { return isRepeat; }
+
+    private void playCurrentIndex(Context context) {
+        if (currentIndex < 0 || currentIndex >= playlist.size()) {
+            if (isRepeat && !playlist.isEmpty()) {
+                currentIndex = 0;
+            } else {
+                return;
+            }
+        }
+
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();
         }
 
-        currentSong = song;
+        currentSong = playlist.get(currentIndex);
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -44,17 +119,60 @@ public class MusicManager {
                 .build());
 
         try {
-            mediaPlayer.setDataSource(context, Uri.parse(song.getFile_url()));
+            mediaPlayer.setDataSource(context, Uri.parse(currentSong.getFile_url()));
             mediaPlayer.prepareAsync();
             mediaPlayer.setOnPreparedListener(mp -> {
                 mp.start();
                 if (listener != null) {
-                    listener.onSongChanged(song);
+                    listener.onSongChanged(currentSong);
                     listener.onStatusChanged(true);
+                }
+            });
+            mediaPlayer.setOnCompletionListener(mp -> {
+                if (isRepeat && !isShuffle && playlist.size() == 1) {
+                    playCurrentIndex(context); // Repeat single song
+                } else if (currentIndex == playlist.size() - 1 && !isRepeat) {
+                    // End of playlist
+                    if (listener != null) listener.onStatusChanged(false);
+                } else {
+                    nextSong(context);
                 }
             });
         } catch (IOException e) {
             Log.e("MusicManager", "Lỗi phát nhạc: " + e.getMessage());
+        }
+    }
+
+    public void nextSong(Context context) {
+        if (playlist.isEmpty()) return;
+        currentIndex = (currentIndex + 1) % playlist.size();
+        playCurrentIndex(context);
+    }
+
+    public void previousSong(Context context) {
+        if (playlist.isEmpty()) return;
+        currentIndex = (currentIndex - 1 + playlist.size()) % playlist.size();
+        playCurrentIndex(context);
+    }
+
+    public List<Song> getPlaylist() {
+        return playlist;
+    }
+
+    public int getCurrentIndex() {
+        return currentIndex;
+    }
+
+    public void stopMusic() {
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+        currentSong = null;
+        if (listener != null) {
+            listener.onSongChanged(null);
+            listener.onStatusChanged(false);
         }
     }
 
@@ -72,4 +190,18 @@ public class MusicManager {
 
     public Song getCurrentSong() { return currentSong; }
     public boolean isPlaying() { return mediaPlayer != null && mediaPlayer.isPlaying(); }
+
+    public int getCurrentPosition() {
+        if (mediaPlayer != null) return mediaPlayer.getCurrentPosition();
+        return 0;
+    }
+
+    public int getDuration() {
+        if (mediaPlayer != null) return mediaPlayer.getDuration();
+        return 0;
+    }
+
+    public void seekTo(int position) {
+        if (mediaPlayer != null) mediaPlayer.seekTo(position);
+    }
 }

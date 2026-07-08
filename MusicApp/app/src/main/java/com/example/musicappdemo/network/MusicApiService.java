@@ -10,8 +10,8 @@ import retrofit2.http.GET;
 
 public interface MusicApiService {
     @GET("api/songs")
-    Call<List<Song>> getSongs();
+    Call<ApiResponse<List<Song>>> getSongs();
 
     @GET("api/genres")
-    Call<List<Genre>> getGenres();
+    Call<ApiResponse<List<Genre>>> getGenres();
 }
