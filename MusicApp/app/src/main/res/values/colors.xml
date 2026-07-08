@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+<!--    Primary Colors -->
+    <color name="P10">#FF002108</color>
+    <color name="P20">#FF003914</color>
+    <color name="P30">#FF005320</color>
+    <color name="P40">#FF006E2D</color>
+    <color name="P50">#FF008A3A</color>
+    <color name="P60">#FF00A748</color>
+    <color name="P70">#FF2FC45D</color>
+    <color name="P80">#FF53E076</color>
+    <color name="P90">#FF72FE8F</color>
+    <color name="P95">#FFC6FFC7</color>
+
+<!--    Secondary Colors -->
+    <color name="S10">#FF1B1C1C</color>
+    <color name="S20">#FF303030</color>
+    <color name="S30">#FF474746</color>
+    <color name="S40">#FF5F5E5E</color>
+    <color name="S50">#FF787776</color>
+    <color name="S60">#FF929090</color>
+    <color name="S70">#FFADABAA</color>
+    <color name="S80">#FFC8C6C5</color>
+    <color name="S90">#FFE4E2E1</color>
+    <color name="S95">#FFF3F0EF</color>
+
+<!--    Tertiary Colors -->
+    <color name="T10">#FF400009</color>
+    <color name="T20">#FF680114</color>
+    <color name="T30">#FF881D28</color>
+    <color name="T40">#FFA8353E</color>
+    <color name="T50">#FFC94D54</color>
+    <color name="T60">#FFEA666C</color>
+    <color name="T70">#FFFF888B</color>
+    <color name="T80">#FFFFB3B3</color>
+    <color name="T90">#FFFFDAD9</color>
+    <color name="T95">#FFFFEDEC</color>
+
+</resources>

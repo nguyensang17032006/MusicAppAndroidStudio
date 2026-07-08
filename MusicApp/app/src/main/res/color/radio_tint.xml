@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Khi được chọn: dùng màu xanh Primary P40 -->
+    <item android:color="@color/P40" android:state_checked="true" />
+    <!-- Khi không chọn: dùng màu xám Secondary S40 -->
+    <item android:color="@color/S40" android:state_checked="false" />
+</selector>
