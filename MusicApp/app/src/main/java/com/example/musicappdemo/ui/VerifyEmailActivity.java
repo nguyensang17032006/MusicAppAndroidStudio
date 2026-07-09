@@ -103,9 +103,9 @@ public class VerifyEmailActivity extends AppCompatActivity {
             // Gọi API Node.js để gửi lại OTP mới
             AuthRequest authRequest = new AuthRequest(email,password,gender);
 
-            RetrofitClient.getApiService().sendOtp(authRequest).enqueue(new Callback<SimpleResponse<Void>>() {
+            RetrofitClient.getApiService().sendOtp(authRequest).enqueue(new Callback<SimpleResponse>() {
                 @Override
-                public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
+                public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
                     if (response.isSuccessful()) {
                         Toast.makeText(VerifyEmailActivity.this, "Mã OTP mới đã được gửi!", Toast.LENGTH_SHORT).show();
                         // Kích hoạt lại bộ đếm ngược 60s
@@ -116,7 +116,7 @@ public class VerifyEmailActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {
+                public void onFailure(Call<SimpleResponse> call, Throwable t) {
                     Toast.makeText(VerifyEmailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });

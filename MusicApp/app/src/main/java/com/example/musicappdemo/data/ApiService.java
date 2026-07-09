@@ -31,7 +31,7 @@ public interface ApiService {
     // 1. API gửi mã OTP về email (Dùng chung cho đăng ký/đăng nhập OTP)
     // Đường dẫn đầy đủ sẽ là: BASE_URL + api/auth/send-otp
     @POST("api/auth/send-otp")
-    Call<SimpleResponse<Void>> sendOtp(@Body AuthRequest request);
+    Call<SimpleResponse> sendOtp(@Body AuthRequest request);
 
     // 2. API xác thực mã OTP + đặt mật khẩu + tạo user trong MySQL
     @POST("api/auth/verify-and-register")
