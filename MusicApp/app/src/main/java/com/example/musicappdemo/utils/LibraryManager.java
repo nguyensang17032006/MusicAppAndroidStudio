@@ -288,4 +288,8 @@ public class LibraryManager {
             }
         });
     }
+
+    public void clearCache() {
+        prefs.edit().clear().commit();
+    }
 }

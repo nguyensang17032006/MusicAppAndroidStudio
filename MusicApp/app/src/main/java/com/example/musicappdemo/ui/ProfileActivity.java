@@ -56,12 +56,15 @@ public class ProfileActivity extends AppCompatActivity {
             // 1. Dừng nhạc ngay lập tức
             com.example.musicappdemo.utils.MusicManager.getInstance().stopMusic();
             
-            // 2. Xóa phiên làm việc
+            // 2. Xóa cache library
+            com.example.musicappdemo.utils.LibraryManager.getInstance(this).clearCache();
+
+            // 3. Xóa phiên làm việc
             SessionManager.get(this).logout();
             Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
             
-            // 3. Chuyển về màn hình Splash/Login
-            Intent intent = new Intent(this, SplashActivity.class);
+            // 4. Chuyển về màn hình Login trực tiếp và xóa toàn bộ stack
+            Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
