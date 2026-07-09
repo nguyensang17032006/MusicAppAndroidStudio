@@ -16,7 +16,7 @@ public interface ApiService {
     Call<SimpleResponse> sendOtp(@Body AuthRequest request);
 
     // 2. API xác thực mã OTP + đặt mật khẩu + tạo user trong MySQL
-    @POST("api/auth/verify-otp")
+    @POST("api/auth/verify-and-register")
     Call<AuthResponse> verifyAndRegister(@Body RegisterOtpRequest request);
 
     // 3. API đăng nhập truyền thống bằng Email & Mật khẩu
