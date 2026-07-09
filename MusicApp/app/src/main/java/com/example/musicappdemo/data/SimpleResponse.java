@@ -1,8 +1,9 @@
 package com.example.musicappdemo.data;
 
-public class SimpleResponse {
+public class SimpleResponse<T> {
     public boolean success;
     public String message;
+    public T data;
 
     public SimpleResponse() {
     }
@@ -26,5 +27,13 @@ public class SimpleResponse {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
     }
 }
