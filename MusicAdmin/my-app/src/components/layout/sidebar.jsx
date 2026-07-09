@@ -10,15 +10,16 @@ const navItems = [
     { to: "/settings", label: "Settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ className, onItemClick }) {
     return (
-        <aside className="w-60 bg-white border-r border-border overflow-y-auto">
+        <aside className={cn("w-full bg-white h-full overflow-y-auto", className)}>
             <nav className="py-6">
                 <ul>
                     {navItems.map((item) => (
                         <li key={item.to}>
                             <NavLink
                                 to={item.to}
+                                onClick={onItemClick}
                                 className={({ isActive }) =>
                                     cn(
                                         "flex items-center gap-3 px-6 py-3 text-sm transition-colors border-l-4",
