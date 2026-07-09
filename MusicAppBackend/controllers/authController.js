@@ -6,11 +6,11 @@ const db = require('../config/db');
 // ==========================================
 const sendOtpEmail = async (req, res) => {
     console.log("Gửi OTP cho email:", req.body.email);
-    const { email } = req.body;
+    const { email, password } = req.body;
     try {
-        const { data, error } = await supabase.auth.signInWithOtp({
+        const { data, error } = await supabase.auth.signUp({
             email: email,
-            options: { shouldCreateUser: true }
+            password: password
         });
 
         if (error) {
@@ -27,18 +27,19 @@ const sendOtpEmail = async (req, res) => {
 // 2. XÁC THỰC OTP + ĐẶT MẬT KHẨU + LƯU MYSQL (TẤT CẢ TRONG 1)
 // ==========================================
 const verifyAndRegister = async (req, res) => {
-    // Android gửi kèm cả password mà user đã nhập ở bước đầu tiên lên đây
+    console.log("Xác thực OTP và đăng ký tài khoản với dữ liệu:", req.body);
     const { email, token, password, gender } = req.body;
 
     try {
-        // BƯỚC A: Xác thực mã OTP trước
+        // BƯỚC A: Xác thực mã OTP (Dùng 'signup' là hoàn toàn chính xác với hàm auth.signUp)
         const { data: otpData, error: otpError } = await supabase.auth.verifyOtp({
             email: email,
-            token: token,
-            type: 'email'
+            token: String(token).trim(), // Đảm bảo không mất số 0 ở đầu nếu có
+            type: 'signup'
         });
 
         if (otpError) {
+            console.error("❌ Lỗi Supabase Verify:", otpError.message);
             return res.status(400).json({ success: false, message: "Mã OTP không chính xác hoặc đã hết hạn." });
         }
 
@@ -46,17 +47,25 @@ const verifyAndRegister = async (req, res) => {
         const session = otpData.session;
 
         if (!supabaseUser || !session) {
+            console.error("❌ Lỗi: Không có session/user trả về.");
             return res.status(400).json({ success: false, message: "Không thể khởi tạo phiên đăng nhập." });
         }
 
-        // BƯỚC B: OTP đúng -> Tiến hành đặt mật khẩu luôn cho tài khoản này bằng Access Token vừa nhận
-        const { error: passError } = await supabase.auth.updateUser(
-            { password: password },
-            { auth: { accessToken: session.access_token } }
-        );
+        console.log("✅ Xác thực OTP trên Supabase thành công! Chuẩn bị lưu vào MySQL...");
 
-        if (passError) {
-            return res.status(400).json({ success: false, message: "Không thể lưu mật khẩu: " + passError.message });
+        // BƯỚC B: Lưu thông tin vào MySQL bằng cú pháp callback an toàn (tránh lỗi sập mạch await)
+        const query = `INSERT INTO users (id, email, gender) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE email=email`;
+
+        try {
+            // Sử dụng await vì db của bạn trả về một Promise
+            await db.query(query, [supabaseUser.id, email, gender || null]);
+
+            console.log("🚀 Đã lưu thông tin vào MySQL thành công!");
+
+        } catch (dbErr) {
+            console.error("❌ Lỗi thực thi MySQL:", dbErr.message);
+            // Nếu lỗi DB, trả về ngay lập tức để Android không bị treo timeout
+            return res.status(500).json({ success: false, message: "Lỗi lưu database MySQL: " + dbErr.message });
         }
 
         // BƯỚC C: Lưu thông tin vào MySQL
@@ -84,6 +93,7 @@ const verifyAndRegister = async (req, res) => {
         }
 
     } catch (err) {
+        console.error("❌ Lỗi hệ thống ngoài dự kiến:", err.message);
         return res.status(500).json({ success: false, message: err.message });
     }
 };

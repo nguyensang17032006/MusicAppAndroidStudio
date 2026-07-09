@@ -3,16 +3,20 @@ package com.example.musicappdemo.model;
 public class Users {
     private int id;
     private String email;
-    private String password;
     private String gender;
     private byte[] image;
     public Users() {
     }
 
-    public Users(int id, String email, String password, String gender, byte[] image) {
+    public Users(int id, String email, String gender, byte[] image) {
         this.id = id;
         this.email = email;
-        this.password = password;
+        this.gender = gender;
+        this.image = image;
+    }
+
+    public Users(String email, String gender, byte[] image) {
+        this.email = email;
         this.gender = gender;
         this.image = image;
     }
@@ -31,14 +35,6 @@ public class Users {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getGender() {
