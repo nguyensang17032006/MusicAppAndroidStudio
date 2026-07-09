@@ -78,14 +78,14 @@
                     style="@style/AppTextInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Nhập mã 6 chữ số">
+                    android:hint="Nhập mã otp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edtVerifyCode"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="number"
-                        android:maxLength="6"
+                        android:maxLength="8"
                         android:textColor="@color/white" />
                 </com.google.android.material.textfield.TextInputLayout>
 
