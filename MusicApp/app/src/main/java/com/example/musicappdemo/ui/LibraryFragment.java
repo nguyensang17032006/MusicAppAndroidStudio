@@ -70,6 +70,10 @@ public class LibraryFragment extends Fragment {
         updateLibraryUI();
         loadInitialData();
 
+        LibraryManager libraryManager = LibraryManager.getInstance(getContext());
+        libraryManager.setSyncListener(this::refreshLibrary);
+        libraryManager.syncAll();
+
         return binding.getRoot();
     }
 
@@ -95,6 +99,7 @@ public class LibraryFragment extends Fragment {
         });
         binding.rvPlaylists.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvPlaylists.setAdapter(playlistAdapter);
+        binding.rvPlaylists.setNestedScrollingEnabled(false);
 
         // Artists
         artistAdapter = new ArtistAdapter(getContext(), displayArtists, artist -> {
@@ -104,6 +109,7 @@ public class LibraryFragment extends Fragment {
         });
         binding.rvArtists.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvArtists.setAdapter(artistAdapter);
+        binding.rvArtists.setNestedScrollingEnabled(false);
     }
 
     private void setupEvents() {
@@ -307,19 +313,33 @@ public class LibraryFragment extends Fragment {
     }
 
     private void refreshLibrary() {
+        if (binding == null || getContext() == null) return;
+
         LibraryManager libraryManager = LibraryManager.getInstance(getContext());
-        int likedCount = libraryManager.getLikedSongs().size();
-        binding.tvLikedSongsCount.setText(likedCount + " bài hát");
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(() -> {
+                if (binding == null) return;
 
-        playlists.clear();
-        playlists.addAll(libraryManager.getPlaylists());
-        if (playlistAdapter != null) {
-            playlistAdapter.notifyDataSetChanged();
+                int likedCount = libraryManager.getLikedSongs().size();
+                binding.tvLikedSongsCount.setText(likedCount + " bài hát");
+
+                List<Playlist> remotePlaylists = libraryManager.getPlaylists();
+                if (playlists != null) {
+                    playlists.clear();
+                    playlists.addAll(remotePlaylists);
+                    if (playlistAdapter != null) {
+                        playlistAdapter.notifyDataSetChanged();
+                    }
+                }
+
+                List<Artist> remoteArtists = libraryManager.getFollowedArtists();
+                if (followedArtists != null) {
+                    followedArtists.clear();
+                    followedArtists.addAll(remoteArtists);
+                    applySort();
+                }
+            });
         }
-
-        followedArtists.clear();
-        followedArtists.addAll(libraryManager.getFollowedArtists());
-        applySort();
     }
 
     @Override

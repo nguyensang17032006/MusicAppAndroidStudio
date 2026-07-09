@@ -9,6 +9,10 @@ public class Playlist implements Serializable {
     private String name;
     private List<Song> songs;
 
+    public Playlist() {
+        this.songs = new ArrayList<>();
+    }
+
     public Playlist(String id, String name) {
         this.id = id;
         this.name = name;
@@ -16,13 +20,14 @@ public class Playlist implements Serializable {
     }
 
     public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
     public List<Song> getSongs() { return songs; }
     public void setSongs(List<Song> songs) { this.songs = songs; }
 
     public void addSong(Song song) {
         if (songs == null) songs = new ArrayList<>();
-        // Check if song already exists to avoid duplicates
         for (Song s : songs) {
             if (s.getId().equals(song.getId())) return;
         }

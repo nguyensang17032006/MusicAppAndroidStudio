@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -168,6 +169,7 @@ public class SearchFragment extends Fragment {
     }
 
     private void performSearch(String query) {
+        hideKeyboard();
         saveSearchHistory(query);
         
         filteredSongs.clear();
@@ -226,6 +228,13 @@ public class SearchFragment extends Fragment {
         }
         binding.rvSearchHistory.setVisibility(View.GONE);
         songAdapter.notifyDataSetChanged();
+    }
+
+    private void hideKeyboard() {
+        if (getActivity() != null && getActivity().getCurrentFocus() != null) {
+            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+        }
     }
 
     private void resetUI() {

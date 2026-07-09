@@ -119,6 +119,7 @@ public class MusicManager {
                 .build());
 
         try {
+            Log.d("MusicManager", "Đang phát: " + currentSong.getTitle() + " URL: " + currentSong.getFile_url());
             mediaPlayer.setDataSource(context, Uri.parse(currentSong.getFile_url()));
             mediaPlayer.prepareAsync();
             mediaPlayer.setOnPreparedListener(mp -> {
@@ -127,6 +128,10 @@ public class MusicManager {
                     listener.onSongChanged(currentSong);
                     listener.onStatusChanged(true);
                 }
+            });
+            mediaPlayer.setOnErrorListener((mp, what, extra) -> {
+                Log.e("MusicManager", "MediaPlayer Error: what=" + what + " extra=" + extra);
+                return false;
             });
             mediaPlayer.setOnCompletionListener(mp -> {
                 if (isRepeat && !isShuffle && playlist.size() == 1) {
@@ -165,11 +170,20 @@ public class MusicManager {
 
     public void stopMusic() {
         if (mediaPlayer != null) {
-            mediaPlayer.stop();
+            try {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.stop();
+                }
+            } catch (Exception e) {
+                Log.e("MusicManager", "Error stopping mediaPlayer: " + e.getMessage());
+            }
             mediaPlayer.release();
             mediaPlayer = null;
         }
         currentSong = null;
+        currentIndex = -1;
+        playlist.clear();
+        originalPlaylist.clear();
         if (listener != null) {
             listener.onSongChanged(null);
             listener.onStatusChanged(false);

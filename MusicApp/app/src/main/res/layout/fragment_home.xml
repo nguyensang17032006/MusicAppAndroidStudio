@@ -16,18 +16,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp">
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/logo"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/placeholder_img"
-                app:shapeAppearanceOverlay="@style/RoundedCorners8" />
+
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="12dp"
-                android:layout_toEndOf="@id/logo"
                 android:text="EduTune"
                 android:textColor="@color/white"
                 android:textSize="18sp"
@@ -45,9 +40,10 @@
         </RelativeLayout>
 
         <TextView
+            android:id="@+id/tv_greeting"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Chào bạn, Lập trình viên!"
+            android:text="Chào bạn!"
             android:textColor="@color/white"
             android:textSize="24sp"
             android:textStyle="bold" />

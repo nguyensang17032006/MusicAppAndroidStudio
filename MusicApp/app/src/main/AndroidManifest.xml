@@ -15,7 +15,7 @@
         android:theme="@style/Theme.MusicAppDemo">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.SplashActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -34,7 +34,8 @@
         <activity android:name=".ui.ForgotPasswordActivity" />
         <activity android:name=".ui.ArtistDetailActivity" />
         <activity android:name=".ui.PlaylistDetailActivity" />
-
+        <activity android:name=".MainActivity"
+            android:windowSoftInputMode="adjustPan"/>
     </application>
 
 </manifest>

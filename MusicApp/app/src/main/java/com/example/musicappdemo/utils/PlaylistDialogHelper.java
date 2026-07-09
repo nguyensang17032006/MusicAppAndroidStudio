@@ -50,15 +50,8 @@ public class PlaylistDialogHelper {
         builder.setPositiveButton("Tạo", (dialog, which) -> {
             String name = input.getText().toString().trim();
             if (!name.isEmpty()) {
-                LibraryManager libraryManager = LibraryManager.getInstance(context);
-                libraryManager.createPlaylist(name);
-                // Sau khi tạo xong, lấy lại list để add song vào cái vừa tạo (là cái cuối cùng)
-                List<Playlist> updated = libraryManager.getPlaylists();
-                if (!updated.isEmpty()) {
-                    Playlist newPlaylist = updated.get(updated.size() - 1);
-                    libraryManager.addSongToPlaylist(newPlaylist.getId(), song);
-                    Toast.makeText(context, "Đã tạo playlist và thêm bài hát", Toast.LENGTH_SHORT).show();
-                }
+                LibraryManager.getInstance(context).createPlaylist(name, song);
+                Toast.makeText(context, "Đang tạo playlist...", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(context, "Tên không được để trống", Toast.LENGTH_SHORT).show();
             }

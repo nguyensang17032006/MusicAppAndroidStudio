@@ -27,6 +27,8 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        com.example.musicappdemo.utils.LibraryManager.getInstance(this).syncAll();
+
         MusicManager.getInstance().setListener(this);
 
         updateMiniPlayerVisibility();

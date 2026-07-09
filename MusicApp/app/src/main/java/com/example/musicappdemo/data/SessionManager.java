@@ -11,6 +11,7 @@ public class SessionManager {
     private static final String KEY_REFRESH = "refresh_token";
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_EMAIL = "email";
+    private static final String KEY_GENDER = "gender";
 
     private static SessionManager instance;
     private final SharedPreferences prefs;
@@ -31,6 +32,7 @@ public class SessionManager {
         if (auth.user != null) {
             e.putString(KEY_USER_ID, auth.user.getId());
             e.putString(KEY_EMAIL, auth.user.getEmail());
+            e.putString(KEY_GENDER, auth.user.getGender());
         }
         e.apply();
     }
@@ -49,6 +51,10 @@ public class SessionManager {
 
     public String getEmail() {
         return prefs.getString(KEY_EMAIL, null);
+    }
+
+    public String getGender() {
+        return prefs.getString(KEY_GENDER, null);
     }
 
     public boolean isLoggedIn() {

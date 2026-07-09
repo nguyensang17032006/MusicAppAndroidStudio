@@ -5,13 +5,28 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5dcb65d0-dba3-4db8-86a2-0e9d86c31776" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/MusicAppBackend/controllers/libraryController.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/MusicAppBackend/routes/libraryRoutes.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/MainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/MainActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/SearchResultAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/SearchResultAdapter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/ApiService.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/ApiService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/RetrofitClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/RetrofitClient.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/SessionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/SessionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/SimpleResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/SimpleResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/ArtistDetailActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/ArtistDetailActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/model/Artist.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/model/Artist.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/model/Playlist.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/model/Playlist.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/HomeFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/HomeFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/LibraryFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/LibraryFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/ProfileActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/ProfileActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/VerifyEmailActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/VerifyEmailActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/LibraryManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/LibraryManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/MusicManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/MusicManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/PlaylistDialogHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/PlaylistDialogHelper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/fragment_home.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/fragment_home.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicAppBackend/controllers/authController.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/controllers/authController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicAppBackend/routes/authRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/routes/authRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicAppBackend/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/server.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,7 +70,7 @@
     &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;dev2&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;emulator&quot;
   }
