@@ -17,11 +17,15 @@ app.use(urlencoded({ extended: true }));
 
 const songRoutes = require('./routes/songRoutes');
 const authRoutes = require('./routes/authRoutes');
+const artistRoutes = require('./routes/artistRoutes');
+const genreRoutes = require('./routes/genreRoutes');
 const recommendRoutes = require('./routes/recommendRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/songs', songRoutes);
+app.use('/api/artists', artistRoutes);
+app.use('/api/genres', genreRoutes);
 app.use('/api/recommendations', recommendRoutes);
 app.use('/api/upload', uploadRoutes);
 

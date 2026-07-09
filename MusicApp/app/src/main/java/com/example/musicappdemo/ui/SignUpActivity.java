@@ -12,8 +12,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.musicappdemo.R;
-import com.example.musicappdemo.data.RetrofitClient;
 import com.example.musicappdemo.data.SimpleResponse;
+import com.example.musicappdemo.data.RetrofitClient;
 import com.example.musicappdemo.databinding.ActivitySignUpBinding;
 import com.example.musicappdemo.model.auth.AuthRequest;
 
@@ -61,10 +61,10 @@ public class SignUpActivity extends AppCompatActivity {
                 final String finalGender = gender;
                 AuthRequest request = new AuthRequest(email, password, finalGender);
 
-                RetrofitClient.getApiService().sendOtp(request).enqueue(new Callback<SimpleResponse>() {
+                RetrofitClient.getApiService().sendOtp(request).enqueue(new Callback<SimpleResponse<Void>>() {
                     @Override
-                    public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
-                        if(response.isSuccessful() && response.body() != null){
+                    public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
+                        if(response.isSuccessful() && response.body() != null && response.body().isSuccess()){
                             Toast.makeText(SignUpActivity.this, "Mã OTP đã được gửi !", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(SignUpActivity.this, VerifyEmailActivity.class);
                             intent.putExtra("email", email);
@@ -72,12 +72,13 @@ public class SignUpActivity extends AppCompatActivity {
                             intent.putExtra("password",password);
                             startActivity(intent);
                         } else {
-                            Toast.makeText(SignUpActivity.this, "Registration failed", Toast.LENGTH_SHORT).show();
+                            String errorMsg = (response.body() != null) ? response.body().getMessage() : "Registration failed";
+                            Toast.makeText(SignUpActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<SimpleResponse> call, Throwable t) {
+                    public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {
                         Toast.makeText(SignUpActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });

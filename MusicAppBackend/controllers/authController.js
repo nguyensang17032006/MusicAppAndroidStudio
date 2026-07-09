@@ -68,25 +68,29 @@ const verifyAndRegister = async (req, res) => {
             return res.status(500).json({ success: false, message: "Lỗi lưu database MySQL: " + dbErr.message });
         }
 
-        // =========================================================================
-        // BƯỚC C: Trả JSON chuẩn về cho Android khi mọi thứ đã êm xuôi
-        // =========================================================================
-        console.log("👉 Session chuẩn bị trả về cho Android:", otpData.session);
+        // BƯỚC C: Lưu thông tin vào MySQL
+        const query = `INSERT INTO users (id, email, gender) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE email=email`;
+        try {
+            await db.query(query, [supabaseUser.id, email, gender || null]);
 
-        return res.status(200).json({
-            access_token: otpData.session?.access_token || "",
-            refresh_token: otpData.session?.refresh_token || "",
-            expires_in: Number(otpData.session?.expires_in || 0),
-            token_type: otpData.session?.token_type || "",
-            user: {
-                id: supabaseUser.id,
-                email: email,
-                gender: gender,
-                email_confirmed_at: supabaseUser.email_confirmed_at || "",
-                last_sign_in_at: supabaseUser.last_sign_in_at || "",
-                created_at: supabaseUser.created_at || ""
-            }
-        });
+            // Trả về dữ liệu sạch sẽ cho Android parse thành AuthResponse.java
+            return res.status(201).json({
+                access_token: session.access_token,
+                refresh_token: session.refresh_token,
+                expires_in: session.expires_in || 0,
+                token_type: session.token_type || "bearer",
+                user: {
+                    id: supabaseUser.id,
+                    email: supabaseUser.email,
+                    email_confirmed_at: supabaseUser.email_confirmed_at,
+                    created_at: supabaseUser.created_at,
+                    gender: supabaseUser.gender
+                }
+            });
+        } catch (err) {
+            console.error("Lỗi MySQL:", err);
+            return res.status(500).json({ success: false, message: "Lỗi lưu database MySQL." });
+        }
 
     } catch (err) {
         console.error("❌ Lỗi hệ thống ngoài dự kiến:", err.message);
