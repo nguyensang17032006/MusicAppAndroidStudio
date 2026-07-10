@@ -53,13 +53,11 @@ const verifyAndRegister = async (req, res) => {
 
         console.log("✅ Xác thực OTP trên Supabase thành công! Chuẩn bị lưu vào MySQL...");
 
-        // BƯỚC B: Lưu thông tin vào MySQL bằng cú pháp callback an toàn (tránh lỗi sập mạch await)
-        const query = `INSERT INTO users (id, email, gender) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE email=email`;
+        // BƯỚC B: Lưu thông tin vào MySQL
+        const sql = `INSERT INTO users (id, email, gender) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE email=email`;
 
         try {
-            // Sử dụng await vì db của bạn trả về một Promise
-            await db.query(query, [supabaseUser.id, email, gender || null]);
-
+            await db.query(sql, [supabaseUser.id, email, gender || null]);
             console.log("🚀 Đã lưu thông tin vào MySQL thành công!");
 
         } catch (dbErr) {
@@ -82,12 +80,12 @@ const verifyAndRegister = async (req, res) => {
                     email: supabaseUser.email,
                     email_confirmed_at: supabaseUser.email_confirmed_at,
                     created_at: supabaseUser.created_at,
-                    gender: supabaseUser.gender
+                    gender: gender || null
                 }
             });
-        } catch (err) {
-            console.error("Lỗi MySQL:", err);
-            return res.status(500).json({ success: false, message: "Lỗi lưu database MySQL." });
+        } catch (dbErr) {
+            console.error("❌ Lỗi thực thi MySQL:", dbErr.message);
+            return res.status(500).json({ success: false, message: "Lỗi lưu database MySQL: " + dbErr.message });
         }
 
     } catch (err) {
@@ -113,13 +111,23 @@ const login = async (req, res) => {
         const supabaseUser = data.user;
         const session = data.session;
 
-        // Nếu thông tin xác thực từ Supabase trống
         if (!supabaseUser || !session) {
             return res.status(400).json({ success: false, message: "Đăng nhập thất bại. Vui lòng thử lại." });
         }
 
-        // Tài khoản đăng nhập bằng mật khẩu đã được lưu ở bước đăng ký OTP rồi, 
-        // nên ở đây chỉ cần trả thông tin phiên làm việc thẳng về cho Android parse mà không cần chèn MySQL nữa.
+        // ĐẢM BẢO USER TỒN TẠI TRONG MYSQL (UPSERT)
+        // Nếu chưa có thì chèn mới, nếu có rồi thì giữ nguyên (hoặc cập nhật email)
+        const sql = `INSERT INTO users (id, email) VALUES (?, ?) ON DUPLICATE KEY UPDATE email=email`;
+        try {
+            await db.query(sql, [supabaseUser.id, supabaseUser.email]);
+        } catch (dbErr) {
+            console.error("Lỗi cập nhật User vào MySQL khi login:", dbErr.message);
+        }
+
+        // Lấy thông tin chi tiết (bao gồm gender) sau khi đã đảm bảo user tồn tại
+        const [userRows] = await db.query('SELECT gender FROM users WHERE id = ?', [supabaseUser.id]);
+        const gender = userRows.length > 0 ? userRows[0].gender : null;
+
         return res.status(200).json({
             access_token: session.access_token,
             refresh_token: session.refresh_token,
@@ -131,7 +139,7 @@ const login = async (req, res) => {
                 email_confirmed_at: supabaseUser.email_confirmed_at,
                 last_sign_in_at: supabaseUser.last_sign_in_at,
                 created_at: supabaseUser.created_at,
-                gender: supabaseUser.gender
+                gender: gender
             }
         });
     } catch (err) {
@@ -139,8 +147,34 @@ const login = async (req, res) => {
     }
 };
 
+const getUserProfile = async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const [rows] = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
+        if (rows.length > 0) {
+            res.status(200).json({ success: true, data: rows[0] });
+        } else {
+            res.status(404).json({ success: false, message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const updateProfile = async (req, res) => {
+    const { userId, gender } = req.body;
+    try {
+        await db.query('UPDATE users SET gender = ? WHERE id = ?', [gender, userId]);
+        res.status(200).json({ success: true, message: 'Profile updated' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     sendOtpEmail,
     verifyAndRegister,
-    login
+    login,
+    getUserProfile,
+    updateProfile
 };

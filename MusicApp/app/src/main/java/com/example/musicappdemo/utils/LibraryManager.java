@@ -2,7 +2,13 @@ package com.example.musicappdemo.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
 
+import com.example.musicappdemo.data.RetrofitClient;
+import com.example.musicappdemo.data.SessionManager;
+import com.example.musicappdemo.data.SimpleResponse;
 import com.example.musicappdemo.model.Artist;
 import com.example.musicappdemo.model.Playlist;
 import com.example.musicappdemo.model.Song;
@@ -11,20 +17,33 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LibraryManager {
     private static final String PREFS_NAME = "LibraryPrefs";
-    private static final String KEY_LIKED_SONGS = "LikedSongs";
-    private static final String KEY_PLAYLISTS = "UserPlaylists";
-    private static final String KEY_FOLLOWED_ARTISTS = "FollowedArtists";
+    private static final String KEY_LIKED_SONGS = "LikedSongs_";
+    private static final String KEY_PLAYLISTS = "UserPlaylists_";
+    private static final String KEY_FOLLOWED_ARTISTS = "FollowedArtists_";
 
     private static LibraryManager instance;
-    private SharedPreferences prefs;
-    private Gson gson;
+    private final SharedPreferences prefs;
+    private final Gson gson;
+    private final Context context;
+    private OnSyncListener syncListener;
+
+    public interface OnSyncListener {
+        void onSyncComplete();
+    }
 
     private LibraryManager(Context context) {
-        prefs = context.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        this.context = context.getApplicationContext();
+        prefs = this.context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         gson = new Gson();
     }
 
@@ -35,26 +54,94 @@ public class LibraryManager {
         return instance;
     }
 
+    public void setSyncListener(OnSyncListener listener) {
+        this.syncListener = listener;
+    }
+
+    private void showToast(String message) {
+        new Handler(Looper.getMainLooper()).post(() -> 
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        );
+    }
+
+    public void syncAll() {
+        syncLikedSongs();
+        syncPlaylists();
+        syncFollowedArtists();
+    }
+
+    private String getUserId() {
+        return SessionManager.get(context).getUserId();
+    }
+
+    // --- LIKED SONGS ---
     public List<Song> getLikedSongs() {
-        String json = prefs.getString(KEY_LIKED_SONGS, null);
+        String userId = getUserId();
+        if (userId == null) return new ArrayList<>();
+        String json = prefs.getString(KEY_LIKED_SONGS + userId, null);
         if (json == null) return new ArrayList<>();
         Type type = new TypeToken<List<Song>>() {}.getType();
         return gson.fromJson(json, type);
     }
 
+    public void syncLikedSongs() {
+        String userId = getUserId();
+        if (userId == null) return;
+        RetrofitClient.getApiService().getLikedSongs(userId).enqueue(new Callback<SimpleResponse<List<Song>>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<List<Song>>> call, Response<SimpleResponse<List<Song>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Song> songs = response.body().getData();
+                    prefs.edit().putString(KEY_LIKED_SONGS + userId, gson.toJson(songs)).apply();
+                    if (syncListener != null) syncListener.onSyncComplete();
+                }
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<List<Song>>> call, Throwable t) {}
+        });
+    }
+
     public void addLikedSong(Song song) {
+        String userId = getUserId();
+        if (userId == null) return;
+
         List<Song> songs = getLikedSongs();
         for (Song s : songs) {
             if (s.getId().equals(song.getId())) return;
         }
         songs.add(song);
-        prefs.edit().putString(KEY_LIKED_SONGS, gson.toJson(songs)).apply();
+        prefs.edit().putString(KEY_LIKED_SONGS + userId, gson.toJson(songs)).apply();
+
+        Map<String, String> body = new HashMap<>();
+        body.put("userId", userId);
+        body.put("songId", song.getId());
+        RetrofitClient.getApiService().toggleLikeSong(body).enqueue(new Callback<SimpleResponse<Void>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
+                if (!response.isSuccessful()) showToast("Lỗi đồng bộ bài hát");
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {}
+        });
     }
 
     public void removeLikedSong(String songId) {
+        String userId = getUserId();
+        if (userId == null) return;
+
         List<Song> songs = getLikedSongs();
         songs.removeIf(s -> s.getId().equals(songId));
-        prefs.edit().putString(KEY_LIKED_SONGS, gson.toJson(songs)).apply();
+        prefs.edit().putString(KEY_LIKED_SONGS + userId, gson.toJson(songs)).apply();
+
+        Map<String, String> body = new HashMap<>();
+        body.put("userId", userId);
+        body.put("songId", songId);
+        RetrofitClient.getApiService().toggleLikeSong(body).enqueue(new Callback<SimpleResponse<Void>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {}
+            @Override
+            public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {}
+        });
     }
 
     public boolean isLiked(String songId) {
@@ -65,44 +152,144 @@ public class LibraryManager {
         return false;
     }
 
+    // --- PLAYLISTS ---
     public List<Playlist> getPlaylists() {
-        String json = prefs.getString(KEY_PLAYLISTS, null);
+        String userId = getUserId();
+        if (userId == null) return new ArrayList<>();
+        String json = prefs.getString(KEY_PLAYLISTS + userId, null);
         if (json == null) return new ArrayList<>();
         Type type = new TypeToken<List<Playlist>>() {}.getType();
         return gson.fromJson(json, type);
     }
 
+    public void syncPlaylists() {
+        String userId = getUserId();
+        if (userId == null) return;
+        RetrofitClient.getApiService().getUserPlaylists(userId).enqueue(new Callback<SimpleResponse<List<Playlist>>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<List<Playlist>>> call, Response<SimpleResponse<List<Playlist>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Playlist> playlists = response.body().getData();
+                    prefs.edit().putString(KEY_PLAYLISTS + userId, gson.toJson(playlists)).apply();
+                    if (syncListener != null) syncListener.onSyncComplete();
+                }
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<List<Playlist>>> call, Throwable t) {}
+        });
+    }
+
     public void createPlaylist(String name) {
-        List<Playlist> playlists = getPlaylists();
-        String id = String.valueOf(System.currentTimeMillis());
-        playlists.add(new Playlist(id, name));
-        prefs.edit().putString(KEY_PLAYLISTS, gson.toJson(playlists)).apply();
+        createPlaylist(name, null);
+    }
+
+    public void createPlaylist(String name, Song songToAdd) {
+        String userId = getUserId();
+        if (userId == null) return;
+
+        Map<String, String> body = new HashMap<>();
+        body.put("userId", userId);
+        body.put("name", name);
+        RetrofitClient.getApiService().createPlaylist(body).enqueue(new Callback<SimpleResponse<Playlist>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<Playlist>> call, Response<SimpleResponse<Playlist>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Playlist newPlaylist = response.body().getData();
+                    if (songToAdd != null && newPlaylist != null) {
+                        addSongToPlaylist(newPlaylist.getId(), songToAdd);
+                    } else {
+                        syncPlaylists();
+                    }
+                    showToast("Đã tạo playlist: " + name);
+                } else {
+                    String errorMsg = "Lỗi khi tạo playlist";
+                    if (response.body() != null && response.body().getMessage() != null) {
+                        errorMsg += ": " + response.body().getMessage();
+                    } else if (response.errorBody() != null) {
+                        try {
+                            errorMsg += " (Code " + response.code() + ")";
+                        } catch (Exception e) {}
+                    }
+                    showToast(errorMsg);
+                }
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<Playlist>> call, Throwable t) {
+                showToast("Lỗi kết nối: " + t.getMessage());
+            }
+        });
     }
 
     public void addSongToPlaylist(String playlistId, Song song) {
-        List<Playlist> playlists = getPlaylists();
-        for (Playlist p : playlists) {
-            if (p.getId().equals(playlistId)) {
-                p.addSong(song);
-                break;
+        Map<String, String> body = new HashMap<>();
+        body.put("playlistId", playlistId);
+        body.put("songId", song.getId());
+        RetrofitClient.getApiService().addSongToPlaylist(body).enqueue(new Callback<SimpleResponse<Void>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    syncPlaylists();
+                } else {
+                    showToast("Lỗi khi thêm vào playlist");
+                }
             }
-        }
-        prefs.edit().putString(KEY_PLAYLISTS, gson.toJson(playlists)).apply();
+            @Override
+            public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {}
+        });
     }
 
+    // --- ARTISTS ---
     public List<Artist> getFollowedArtists() {
-        String json = prefs.getString(KEY_FOLLOWED_ARTISTS, null);
+        String userId = getUserId();
+        if (userId == null) return new ArrayList<>();
+        String json = prefs.getString(KEY_FOLLOWED_ARTISTS + userId, null);
         if (json == null) return new ArrayList<>();
         Type type = new TypeToken<List<Artist>>() {}.getType();
         return gson.fromJson(json, type);
     }
 
+    public void syncFollowedArtists() {
+        String userId = getUserId();
+        if (userId == null) return;
+        RetrofitClient.getApiService().getFollowedArtists(userId).enqueue(new Callback<SimpleResponse<List<Artist>>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<List<Artist>>> call, Response<SimpleResponse<List<Artist>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Artist> artists = response.body().getData();
+                    prefs.edit().putString(KEY_FOLLOWED_ARTISTS + userId, gson.toJson(artists)).apply();
+                    if (syncListener != null) syncListener.onSyncComplete();
+                }
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<List<Artist>>> call, Throwable t) {}
+        });
+    }
+
     public void followArtist(Artist artist) {
-        List<Artist> artists = getFollowedArtists();
-        for (Artist a : artists) {
-            if (a.getName().equalsIgnoreCase(artist.getName())) return;
-        }
-        artists.add(artist);
-        prefs.edit().putString(KEY_FOLLOWED_ARTISTS, gson.toJson(artists)).apply();
+        String userId = getUserId();
+        if (userId == null) return;
+
+        Map<String, String> body = new HashMap<>();
+        body.put("userId", userId);
+        body.put("artistId", artist.getId());
+        RetrofitClient.getApiService().toggleFollowArtist(body).enqueue(new Callback<SimpleResponse<Void>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    syncFollowedArtists();
+                    showToast("Đã theo dõi: " + artist.getName());
+                } else {
+                    showToast("Lỗi khi theo dõi nghệ sĩ");
+                }
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {
+                showToast("Lỗi kết nối");
+            }
+        });
+    }
+
+    public void clearCache() {
+        prefs.edit().clear().commit();
     }
 }

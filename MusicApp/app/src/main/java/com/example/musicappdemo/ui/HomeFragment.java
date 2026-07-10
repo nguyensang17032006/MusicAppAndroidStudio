@@ -44,12 +44,25 @@ public class HomeFragment extends Fragment {
 
         setupRecyclerViews();
         fetchSongs();
+        updateGreeting();
 
         binding.btnProfile.setOnClickListener(v -> {
             startActivity(new Intent(getActivity(), ProfileActivity.class));
         });
 
         return binding.getRoot();
+    }
+
+    private void updateGreeting() {
+        String email = com.example.musicappdemo.data.SessionManager.get(getContext()).getEmail();
+        if (email != null && !email.isEmpty()) {
+            String name = email.split("@")[0];
+            // Viết hoa chữ cái đầu cho đẹp
+            if (name.length() > 0) {
+                name = name.substring(0, 1).toUpperCase() + name.substring(1);
+            }
+            binding.tvGreeting.setText("Chào bạn, " + name + "!");
+        }
     }
 
     private void setupRecyclerViews() {

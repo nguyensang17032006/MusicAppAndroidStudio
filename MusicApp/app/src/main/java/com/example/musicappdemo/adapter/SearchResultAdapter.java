@@ -1,6 +1,7 @@
 package com.example.musicappdemo.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,6 +52,8 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
         holder.itemView.setOnClickListener(v -> {
             MusicManager.getInstance().playSong(context, song);
+            Intent intent = new Intent(context, com.example.musicappdemo.PlayerActivity.class);
+            context.startActivity(intent);
         });
 
         holder.binding.lessonActions.setVisibility(View.VISIBLE);

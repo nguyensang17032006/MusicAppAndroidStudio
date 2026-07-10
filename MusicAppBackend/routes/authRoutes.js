@@ -8,4 +8,8 @@ router.post('/login', authController.login);
 
 router.post('/verify-and-register', authController.verifyAndRegister);
 
+router.get('/me/:userId', authController.getUserProfile);
+
+router.post('/update-profile', authController.updateProfile);
+
 module.exports = router;
