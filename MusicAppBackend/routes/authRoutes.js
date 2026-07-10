@@ -12,4 +12,9 @@ router.get('/me/:userId', authController.getUserProfile);
 
 router.post('/update-profile', authController.updateProfile);
 
-module.exports = router;
+router.post('/forgot-password/send-otp', authController.sendOtpForgotPassword);
+
+router.post('/forgot-password/verify', authController.verifyOtpForgotPassword);
+
+router.post('/forgot-password/newpassword', authController.updateNewPassword);
+module.exports = router;    

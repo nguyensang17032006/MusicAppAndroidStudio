@@ -46,9 +46,6 @@ public class SignUpActivity extends AppCompatActivity {
                 } else if (checkedId == R.id.rbOther) {
                     gender = "Other";
                 }
-
-
-
                 if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || gender.isEmpty()) {
                     Toast.makeText(SignUpActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                     return;
@@ -67,6 +64,7 @@ public class SignUpActivity extends AppCompatActivity {
                         if(response.isSuccessful() && response.body() != null && response.body().isSuccess()){
                             Toast.makeText(SignUpActivity.this, "Mã OTP đã được gửi !", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(SignUpActivity.this, VerifyEmailActivity.class);
+                            intent.putExtra("type","signup");
                             intent.putExtra("email", email);
                             intent.putExtra("gender",finalGender);
                             intent.putExtra("password",password);
