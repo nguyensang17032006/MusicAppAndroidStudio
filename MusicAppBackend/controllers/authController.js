@@ -60,6 +60,15 @@ const verifyAndRegister = async (req, res) => {
             await db.query(sql, [supabaseUser.id, email, gender || null]);
             console.log("🚀 Đã lưu thông tin vào MySQL thành công!");
 
+        } catch (dbErr) {
+            console.error("❌ Lỗi thực thi MySQL:", dbErr.message);
+            // Nếu lỗi DB, trả về ngay lập tức để Android không bị treo timeout
+            return res.status(500).json({ success: false, message: "Lỗi lưu database MySQL: " + dbErr.message });
+        }
+
+        try {
+            await db.query(query, [supabaseUser.id, email, gender || null]);
+
             // Trả về dữ liệu sạch sẽ cho Android parse thành AuthResponse.java
             return res.status(201).json({
                 access_token: session.access_token,

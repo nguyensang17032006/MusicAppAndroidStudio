@@ -4,38 +4,17 @@ import { RotateCcw } from "lucide-react";
 import ArtistForm from "../components/artists/artist_form.jsx";
 import ArtistTable from "../components/artists/artist_table.jsx";
 
-// Initial fallback seed data
-const SEED_ARTISTS = [
-    {
-        id: "A001",
-        name: "Sơn Tùng M-TP",
-        avatar_url: "https://upload.wikimedia.org/wikipedia/commons/e/e5/S%C6%A1n_T%C3%B9ng_M-TP_at_Sheraton_Saigon_Hotel_%28cropped%29.png",
-        bio: "Nguyễn Thanh Tùng, nghệ danh Sơn Tùng M-TP, là một nam ca sĩ kiêm nhạc sĩ và diễn viên người Việt Nam."
-    },
-    {
-        id: "A002",
-        name: "Đen Vâu",
-        avatar_url: "https://upload.wikimedia.org/wikipedia/commons/e/ea/Ca_s%C4%A9_%C4%90en_V%C3%A2u.jpg",
-        bio: "Nguyễn Đức Cường, nghệ danh Đen Vâu hay Đen, là một nam nhạc sĩ kiêm rapper người Việt Nam."
-    },
-    {
-        id: "A003",
-        name: "Suboi",
-        avatar_url: "https://upload.wikimedia.org/wikipedia/commons/1/1a/Suboi_2021.jpg",
-        bio: "Hàng Lâm Trang Anh, nghệ danh Suboi, là một nữ rapper, ca sĩ, nhạc sĩ người Việt Nam. Cô được mệnh danh là Nữ hoàng nhạc Hip hop Việt Nam."
-    }
-];
-
 // Backend API URL Base
 const API_URL = 'http://localhost:3000/api/artists';
 
 // Helper to generate next ID
 const generateArtistId = (artistsList) => {
-    if (!artistsList || artistsList.length === 0) return 'A001';
+    if (!artistsList || !Array.isArray(artistsList) || artistsList.length === 0) return 'A001';
     const ids = artistsList
         .map(a => {
-            const match = a.id.match(/^A(\d+)$/);
-            return match ? parseInt(match[1], 10) : 0;
+            if (!a || !a.id) return 0;
+            const match = String(a.id).match(/\d+/);
+            return match ? parseInt(match[0], 10) : 0;
         })
         .filter(n => n > 0);
     const maxId = ids.length > 0 ? Math.max(...ids) : 0;
@@ -58,9 +37,10 @@ export default function ArtistsPage() {
             console.log(`fetching artists from backend: ${API_URL}`);
             const res = await fetch(API_URL);
             if (!res.ok) throw new Error('API server returned error code');
-            
+
             const data = await res.json();
-            setArtists(data);
+            const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+            setArtists(list);
         } catch (error) {
             console.warn("Backend offline or connection failed. Falling back to local storage.", error);
             // Local storage fallback
@@ -69,10 +49,10 @@ export default function ArtistsPage() {
                 try {
                     setArtists(JSON.parse(stored));
                 } catch (e) {
-                    setArtists(SEED_ARTISTS);
+                    setArtists([]);
                 }
             } else {
-                setArtists(SEED_ARTISTS);
+                setArtists([]);
             }
         } finally {
             setIsLoading(false);
@@ -130,7 +110,7 @@ export default function ArtistsPage() {
             const result = await res.json();
             setSuccessMsg(result.message || 'Saved successfully to MySQL database!');
             setEditingArtist(null);
-            
+
             // Reload updated database lists
             await fetchArtists();
         } catch (error) {
@@ -139,7 +119,7 @@ export default function ArtistsPage() {
 
             // Local fallback backup
             const finalAvatarUrl = localBackupData.avatarPreview || (editingArtist ? editingArtist.avatar_url : '');
-            
+
             if (editingArtist) {
                 // Update local state
                 setArtists(prev => prev.map(a =>
@@ -185,7 +165,7 @@ export default function ArtistsPage() {
             if (editingArtist && editingArtist.id === id) {
                 setEditingArtist(null);
             }
-            
+
             // Refresh
             await fetchArtists();
         } catch (error) {
@@ -204,9 +184,9 @@ export default function ArtistsPage() {
 
     const handleResetToSeeds = () => {
         if (window.confirm('Reset local database list to default seed data? All custom additions will be lost.')) {
-            setArtists(SEED_ARTISTS);
+            setArtists([]);
             setEditingArtist(null);
-            localStorage.setItem('music_admin_artists', JSON.stringify(SEED_ARTISTS));
+            localStorage.setItem('music_admin_artists', JSON.stringify([]));
             setSuccessMsg('Reset local registry records to default values.');
         }
     };
@@ -244,7 +224,7 @@ export default function ArtistsPage() {
 
             {/* Layout Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
+
                 {/* Form Card (1 col on lg) */}
                 <div className="lg:col-span-1">
                     <ArtistForm

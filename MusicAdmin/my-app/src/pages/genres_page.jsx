@@ -16,11 +16,12 @@ const API_URL = 'http://localhost:3000/api/genres';
 
 // Helper to generate next ID
 const generateGenreId = (genresList) => {
-    if (!genresList || genresList.length === 0) return 'G001';
+    if (!genresList || !Array.isArray(genresList) || genresList.length === 0) return 'G001';
     const ids = genresList
         .map(g => {
-            const match = g.id.match(/^G(\d+)$/);
-            return match ? parseInt(match[1], 10) : 0;
+            if (!g || !g.id) return 0;
+            const match = String(g.id).match(/\d+/);
+            return match ? parseInt(match[0], 10) : 0;
         })
         .filter(n => n > 0);
     const maxId = ids.length > 0 ? Math.max(...ids) : 0;
@@ -45,7 +46,8 @@ export default function GenresPage() {
             if (!res.ok) throw new Error('API server returned error code');
             
             const data = await res.json();
-            setGenres(data);
+            const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+            setGenres(list);
         } catch (error) {
             console.warn("Backend offline or connection failed. Falling back to local storage.", error);
             // Local storage fallback

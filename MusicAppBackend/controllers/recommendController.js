@@ -41,16 +41,16 @@ const getRecommendations = async (req, res) => {
         // BƯỚC A: Phân tích xem thể loại nhạc (genre_id) nào đem lại điểm số cao nhất cho user này
         // Quy tắc tính điểm đơn giản: Thích = +5 điểm, Nghe lâu = +3 điểm, Bị Skip = -5 điểm
         const [favoriteGenreResult] = await db.query(`
-            SELECT s.genre_id, 
+            SELECT sg.genre_id, 
                    SUM(CASE 
-                       WHEN i.is_liked = i.is_liked THEN 5 
-                       WHEN i.is_skipped = i.is_skipped THEN -5 
+                       WHEN i.is_liked = 1 THEN 5 
+                       WHEN i.is_skipped = 1 THEN -5 
                        ELSE 3 
                    END) as preference_score
             FROM interaction_logs i
-            JOIN songs s ON i.song_id = s.id
-            WHERE i.user_id = ? AND s.genre_id IS NOT NULL
-            GROUP BY s.genre_id
+            JOIN song_genres sg ON i.song_id = sg.song_id
+            WHERE i.user_id = ? AND sg.genre_id IS NOT NULL
+            GROUP BY sg.genre_id
             ORDER BY preference_score DESC
             LIMIT 1
         `, [user_id]);
@@ -59,9 +59,13 @@ const getRecommendations = async (req, res) => {
         // -> Gợi ý Top 10 bài hát có lượt xem (views) cao nhất hệ thống (Trending)
         if (favoriteGenreResult.length === 0 || favoriteGenreResult[0].preference_score <= 0) {
             const [trendingSongs] = await db.query(`
-                SELECT s.*, a.name as artist_name 
+                SELECT s.*, 
+                       (SELECT a.name 
+                        FROM artists a 
+                        JOIN song_artists sa ON a.id = sa.artist_id 
+                        WHERE sa.song_id = s.id AND sa.is_main_artist = 1 
+                        LIMIT 1) as artist_name
                 FROM songs s
-                LEFT JOIN artists a ON s.artist_id = a.id
                 ORDER BY s.views DESC 
                 LIMIT 10
             `);
@@ -78,10 +82,15 @@ const getRecommendations = async (req, res) => {
 
         // Tiến hành lấy ra 10 bài hát thuộc thể loại này (Ưu tiên các bài nhiều view)
         const [recommendedSongs] = await db.query(`
-            SELECT s.*, a.name as artist_name 
+            SELECT s.*, 
+                   (SELECT a.name 
+                    FROM artists a 
+                    JOIN song_artists sa ON a.id = sa.artist_id 
+                    WHERE sa.song_id = s.id AND sa.is_main_artist = 1 
+                    LIMIT 1) as artist_name
             FROM songs s
-            LEFT JOIN artists a ON s.artist_id = a.id
-            WHERE s.genre_id = ?
+            JOIN song_genres sg ON s.id = sg.song_id
+            WHERE sg.genre_id = ?
             ORDER BY s.views DESC
             LIMIT 10
         `, [topGenreId]);
