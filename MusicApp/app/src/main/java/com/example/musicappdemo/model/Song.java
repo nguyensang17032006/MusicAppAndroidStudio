@@ -11,7 +11,7 @@ public class Song implements Serializable {
     private int duration;
     private int views;
     private ArrayList<Artist> artists;
-    private ArrayList<Genre> genre;
+    private ArrayList<Genre> genres;
 
     public Song() {}
 
@@ -71,11 +71,11 @@ public class Song implements Serializable {
         this.artists = artists;
     }
 
-    public ArrayList<Genre> getGenre() {
-        return genre;
+    public ArrayList<Genre> getGenres() {
+        return genres;
     }
 
-    public void setGenre(ArrayList<Genre> genre) {
-        this.genre = genre;
+    public void setGenres(ArrayList<Genre> genres) {
+        this.genres = genres;
     }
 }

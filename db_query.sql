@@ -17,7 +17,6 @@ DROP TABLE IF EXISTS songs;
 DROP TABLE IF EXISTS genres;
 DROP TABLE IF EXISTS artists;
 DROP TABLE IF EXISTS users;
-
 -- Bảng 1: Người dùng
 CREATE TABLE users (
     id VARCHAR(255) PRIMARY KEY, -- ID từ Supabase Auth
