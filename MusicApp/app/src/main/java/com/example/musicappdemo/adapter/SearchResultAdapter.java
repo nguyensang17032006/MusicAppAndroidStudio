@@ -41,8 +41,10 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Song song = songList.get(position);
+        String artistName = (song.getArtists() != null && !song.getArtists().isEmpty()) ? song.getArtists().get(0).getName() : "Unknown Artist";
+
         holder.binding.tvLessonTitle.setText(song.getTitle());
-        holder.binding.tvLessonInfo.setText(song.getArtist_names());
+        holder.binding.tvInfo.setText(artistName);
 
         if (song.getCover_url() != null && !song.getCover_url().isEmpty()) {
             Glide.with(context).load(song.getCover_url()).into(holder.binding.lessonImg);

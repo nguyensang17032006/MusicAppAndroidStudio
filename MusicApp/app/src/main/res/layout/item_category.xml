@@ -23,18 +23,7 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/ivCategoryImage"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginEnd="-10dp"
-            android:layout_marginBottom="-5dp"
-            android:rotation="25"
-            android:scaleType="centerCrop"
-            android:src="@drawable/placeholder_img"
-            app:shapeAppearanceOverlay="@style/RoundedCorners8" />
+
 
     </RelativeLayout>
 </androidx.cardview.widget.CardView>

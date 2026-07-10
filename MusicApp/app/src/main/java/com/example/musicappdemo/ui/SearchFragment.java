@@ -6,11 +6,13 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,13 +48,8 @@ public class SearchFragment extends Fragment {
     private final List<Genre> allGenres = new ArrayList<>();
     private final List<Genre> recommendedGenres = new ArrayList<>();
     private final List<String> searchHistory = new ArrayList<>();
-    
-    // Đổi SongAdapter sang một cái tương thích RecyclerView nếu cần, 
-    // nhưng ở đây SongAdapter cũ là BaseAdapter dùng cho ListView.
-    // Để nhanh nhất, mình sẽ dùng một Adapter mới cho RecyclerView hoặc đổi ListView lại.
-    // Thực tế SongAdapter đang kế thừa BaseAdapter. Mình sẽ tạo một cái Adapter đơn giản cho Search.
     private SearchResultAdapter songAdapter;
-    private CategoryAdapter genreAdapter; 
+    private CategoryAdapter genreAdapter;
     private SearchHistoryAdapter historyAdapter;
 
     private static final String PREFS_NAME = "MusicAppPrefs";
@@ -60,7 +57,8 @@ public class SearchFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = FragmentSearchBinding.inflate(inflater, container, false);
 
         setupAdapters();
@@ -72,7 +70,8 @@ public class SearchFragment extends Fragment {
 
         binding.etSearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -82,7 +81,8 @@ public class SearchFragment extends Fragment {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         });
 
         binding.etSearch.setOnEditorActionListener((v, actionId, event) -> {
@@ -104,22 +104,28 @@ public class SearchFragment extends Fragment {
         binding.rvSearchResults.setAdapter(songAdapter);
 
         // Sử dụng CategoryAdapter để hiển thị thể loại (Album đề xuất)
-        genreAdapter = new CategoryAdapter(getContext(), recommendedGenres);
-        binding.gvCategories.setAdapter(genreAdapter);
-
-        binding.gvCategories.setOnItemClickListener((parent, view, position, id) -> {
-            Genre genre = recommendedGenres.get(position);
-            List<Song> genrePlaylist = new ArrayList<>();
+        genreAdapter = new CategoryAdapter(getContext(), recommendedGenres, (genre, position) -> {
+            ArrayList<Song> genreSongs = new ArrayList<>();
             for (Song s : allSongs) {
-                if (s.getGenre_names() != null && s.getGenre_names().contains(genre.getName())) {
-                    genrePlaylist.add(s);
+                if (s.getGenres() != null && !s.getGenres().isEmpty()) {
+                    for (Genre g : s.getGenres()) {
+                        if (g.getName() != null && g.getName().equalsIgnoreCase(genre.getName())) {
+                            genreSongs.add(s);
+                            break;
+                        }
+                    }
                 }
             }
-            if (!genrePlaylist.isEmpty()) {
-                MusicManager.getInstance().playPlaylist(getContext(), genrePlaylist, 0);
-                startActivity(new Intent(getActivity(), PlayerActivity.class));
+            if (!genreSongs.isEmpty()) {
+                Intent intent = new Intent(getActivity(), PlaylistDetailActivity.class);
+                intent.putExtra("playlist_title", genre.getName());
+                intent.putExtra("playlist_songs", genreSongs);
+                startActivity(intent);
+            } else {
+                Toast.makeText(getContext(), "Không có bài hát nào thuộc thể loại này", Toast.LENGTH_SHORT).show();
             }
         });
+        binding.rvCategories.setAdapter(genreAdapter);
 
         historyAdapter = new SearchHistoryAdapter(searchHistory, new SearchHistoryAdapter.OnHistoryClickListener() {
             @Override
@@ -143,35 +149,49 @@ public class SearchFragment extends Fragment {
     private void loadAllSongs() {
         RetrofitClient.getApiService().getSongs().enqueue(new Callback<SimpleResponse<List<Song>>>() {
             @Override
-            public void onResponse(@NonNull Call<SimpleResponse<List<Song>>> call, @NonNull Response<SimpleResponse<List<Song>>> response) {
+            public void onResponse(@NonNull Call<SimpleResponse<List<Song>>> call,
+                    @NonNull Response<SimpleResponse<List<Song>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     allSongs.clear();
                     allSongs.addAll(response.body().getData());
                 }
             }
+
             @Override
-            public void onFailure(@NonNull Call<SimpleResponse<List<Song>>> call, @NonNull Throwable t) {}
+            public void onFailure(@NonNull Call<SimpleResponse<List<Song>>> call, @NonNull Throwable t) {
+            }
         });
     }
 
     private void loadAllGenres() {
         RetrofitClient.getApiService().getGenres().enqueue(new Callback<SimpleResponse<List<Genre>>>() {
             @Override
-            public void onResponse(@NonNull Call<SimpleResponse<List<Genre>>> call, @NonNull Response<SimpleResponse<List<Genre>>> response) {
+            public void onResponse(@NonNull Call<SimpleResponse<List<Genre>>> call,
+                    @NonNull Response<SimpleResponse<List<Genre>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     allGenres.clear();
                     allGenres.addAll(response.body().getData());
+                    if (binding != null && (binding.etSearch.getText() == null
+                            || binding.etSearch.getText().toString().trim().isEmpty())) {
+                        recommendedGenres.clear();
+                        recommendedGenres.addAll(allGenres);
+                        genreAdapter.notifyDataSetChanged();
+                        binding.defaultContent.setVisibility(View.VISIBLE);
+                        binding.tvGenreTitle.setText("Tất cả thể loại");
+                    }
                 }
             }
+
             @Override
-            public void onFailure(@NonNull Call<SimpleResponse<List<Genre>>> call, @NonNull Throwable t) {}
+            public void onFailure(@NonNull Call<SimpleResponse<List<Genre>>> call, @NonNull Throwable t) {
+            }
         });
     }
 
     private void performSearch(String query) {
         hideKeyboard();
         saveSearchHistory(query);
-        
+
         filteredSongs.clear();
         recommendedGenres.clear();
         Set<String> foundGenreNames = new HashSet<>();
@@ -179,12 +199,12 @@ public class SearchFragment extends Fragment {
 
         for (Song song : allSongs) {
             String title = song.getTitle() != null ? song.getTitle().toLowerCase() : "";
-            String artists = song.getArtist_names() != null ? song.getArtist_names().toLowerCase() : "";
-            
+            String artists = song.getArtists() != null ? song.getArtists().get(0).getName().toLowerCase() : "";
+
             if (title.contains(lowerQuery) || artists.contains(lowerQuery)) {
                 filteredSongs.add(song);
-                if (song.getGenre_names() != null && !song.getGenre_names().isEmpty()) {
-                    String[] genres = song.getGenre_names().split(",");
+                if (song.getGenres() != null && !song.getGenres().isEmpty()) {
+                    String[] genres = song.getGenres().get(0).getName().split(",");
                     for (String g : genres) {
                         foundGenreNames.add(g.trim());
                     }
@@ -200,7 +220,7 @@ public class SearchFragment extends Fragment {
         } else {
             binding.rvSearchResults.setVisibility(View.VISIBLE);
             binding.tvNoResults.setVisibility(View.GONE);
-            
+
             // Tìm các đối tượng Genre tương ứng hoặc tạo mới nếu không thấy
             for (String genreName : foundGenreNames) {
                 Genre match = null;
@@ -214,13 +234,14 @@ public class SearchFragment extends Fragment {
                     recommendedGenres.add(match);
                 } else {
                     // Tạo Genre "ảo" nếu API không trả về nhưng bài hát có thể loại này
-                    Genre virtualGenre = new Genre(genreName); 
+                    Genre virtualGenre = new Genre(genreName);
                     recommendedGenres.add(virtualGenre);
                 }
             }
-            
+
             if (!recommendedGenres.isEmpty()) {
                 binding.defaultContent.setVisibility(View.VISIBLE);
+                binding.tvGenreTitle.setText("Thể loại đề xuất");
                 genreAdapter.notifyDataSetChanged();
             } else {
                 binding.defaultContent.setVisibility(View.GONE);
@@ -240,7 +261,12 @@ public class SearchFragment extends Fragment {
     private void resetUI() {
         binding.rvSearchResults.setVisibility(View.GONE);
         binding.tvNoResults.setVisibility(View.GONE);
-        binding.defaultContent.setVisibility(View.GONE);
+        binding.defaultContent.setVisibility(View.VISIBLE);
+        filteredSongs.clear();
+        recommendedGenres.clear();
+        recommendedGenres.addAll(allGenres);
+        binding.tvGenreTitle.setText("Tất cả thể loại");
+        genreAdapter.notifyDataSetChanged();
         updateHistoryVisibility();
     }
 
@@ -264,7 +290,8 @@ public class SearchFragment extends Fragment {
     }
 
     private void saveSearchHistory(String query) {
-        if (query.isEmpty()) return;
+        if (query.isEmpty())
+            return;
         searchHistory.remove(query);
         searchHistory.add(0, query);
         if (searchHistory.size() > 5) {
@@ -275,12 +302,14 @@ public class SearchFragment extends Fragment {
     }
 
     private void saveHistoryToPrefs() {
-        if (getActivity() == null) return;
+        if (getActivity() == null)
+            return;
         SharedPreferences prefs = getActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < searchHistory.size(); i++) {
             sb.append(searchHistory.get(i));
-            if (i < searchHistory.size() - 1) sb.append("|");
+            if (i < searchHistory.size() - 1)
+                sb.append("|");
         }
         prefs.edit().putString(KEY_HISTORY, sb.toString()).apply();
     }

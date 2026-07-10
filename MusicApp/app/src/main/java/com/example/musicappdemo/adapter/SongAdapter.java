@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import com.bumptech.glide.Glide;
 import com.example.musicappdemo.PlayerActivity;
 import com.example.musicappdemo.R;
+import com.example.musicappdemo.model.Artist;
 import com.example.musicappdemo.model.Song;
 import com.example.musicappdemo.utils.LibraryManager;
 import com.example.musicappdemo.utils.MusicManager;
@@ -49,13 +50,14 @@ public class SongAdapter extends BaseAdapter {
         }
 
         Song song = songs.get(position);
+        String artistName = (song.getArtists() != null && !song.getArtists().isEmpty()) ? song.getArtists().get(0).getName() : "Unknown Artist";
 
         TextView tvTitle = convertView.findViewById(R.id.tvLessonTitle);
-        TextView tvArtist = convertView.findViewById(R.id.tvLessonInfo);
+        TextView tvArtist = convertView.findViewById(R.id.tvInfo);
         ImageView imgCover = convertView.findViewById(R.id.lessonImg);
 
         tvTitle.setText(song.getTitle());
-        tvArtist.setText(song.getArtist_names());
+        tvArtist.setText(artistName);
 
         ImageView btnHeart = convertView.findViewById(R.id.btnHeart);
         ImageView btnMore = convertView.findViewById(R.id.btnMore);

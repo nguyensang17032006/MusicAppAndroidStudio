@@ -45,8 +45,10 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Song song = songList.get(position);
+        String artistName = (song.getArtists() != null && !song.getArtists().isEmpty()) ? song.getArtists().get(0).getName() : "Unknown Artist";
+
         holder.binding.tvLessonTitle.setText(song.getTitle());
-        holder.binding.tvLessonInfo.setText(song.getArtist_names());
+        holder.binding.tvInfo.setText(artistName);
 
         // Ẩn trái tim và dấu 3 chấm khi trong danh sách phát (Player)
         holder.binding.lessonActions.setVisibility(View.GONE);

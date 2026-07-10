@@ -46,7 +46,7 @@ public class LessonListViewAdapter extends BaseAdapter {
         Lesson lesson = (Lesson) getItem(position);
 
         TextView tvTitle = convertView.findViewById(R.id.tvLessonTitle);
-        TextView tvInfo = convertView.findViewById(R.id.tvLessonInfo);
+        TextView tvInfo = convertView.findViewById(R.id.tvInfo);
 
         tvTitle.setText(lesson.getTitle());
         tvInfo.setText(lesson.getInfo());

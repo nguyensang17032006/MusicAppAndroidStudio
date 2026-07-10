@@ -78,8 +78,10 @@ public class PlayerActivity extends AppCompatActivity implements MusicManager.On
 
     private void updateUI(Song song) {
         if (song != null) {
+            String artistName = (song.getArtists() != null && !song.getArtists().isEmpty()) ? song.getArtists().get(0).getName() : "Unknown Artist";
+
             binding.tvSongTitle.setText(song.getTitle());
-            binding.tvArtistName.setText(song.getArtist_names());
+            binding.tvArtistName.setText(artistName);
             if (song.getCover_url() != null && !song.getCover_url().isEmpty()) {
                 Glide.with(this).load(song.getCover_url()).into(binding.imgArtwork);
             } else {

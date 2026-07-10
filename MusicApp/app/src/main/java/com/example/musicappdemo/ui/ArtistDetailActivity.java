@@ -60,7 +60,7 @@ public class ArtistDetailActivity extends AppCompatActivity {
                     if (allSongs != null) {
                         artistSongs.clear();
                         for (Song song : allSongs) {
-                            if (song.getArtist_names() != null && song.getArtist_names().contains(artistName)) {
+                            if (song.getArtists()!= null && song.getArtists().contains(artistName)) {
                                 artistSongs.add(song);
                             }
                         }

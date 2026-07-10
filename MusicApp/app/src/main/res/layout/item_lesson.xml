@@ -32,10 +32,9 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tvLessonInfo"
+            android:id="@+id/tvInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Android UI • 15:20"
             android:textColor="@color/S60"
             android:textSize="12sp" />
     </LinearLayout>
