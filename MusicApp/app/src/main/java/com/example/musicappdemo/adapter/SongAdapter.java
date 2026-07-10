@@ -3,7 +3,6 @@ package com.example.musicappdemo.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -46,7 +45,7 @@ public class SongAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_lesson, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_music, parent, false);
         }
 
         Song song = songs.get(position);

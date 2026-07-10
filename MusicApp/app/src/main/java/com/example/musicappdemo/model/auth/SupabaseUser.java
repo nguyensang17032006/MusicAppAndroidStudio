@@ -9,6 +9,8 @@ public class SupabaseUser {
     private String email;
     @SerializedName("gender")
     private String gender;
+    @SerializedName("avatar_url")
+    private String avatarUrl;
     @SerializedName("email_confirmed_at")
     private String emailConfirmedAt;
     @SerializedName("last_sign_in_at")
@@ -50,6 +52,14 @@ public class SupabaseUser {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public String getEmailConfirmedAt() {

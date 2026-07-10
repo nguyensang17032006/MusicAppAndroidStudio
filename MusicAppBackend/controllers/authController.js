@@ -162,9 +162,9 @@ const getUserProfile = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
-    const { userId, gender } = req.body;
+    const { userId, gender, avatar_url } = req.body;
     try {
-        await db.query('UPDATE users SET gender = ? WHERE id = ?', [gender, userId]);
+        await db.query('UPDATE users SET gender = ?, avatar_url = ? WHERE id = ?', [gender, avatar_url, userId]);
         res.status(200).json({ success: true, message: 'Profile updated' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
