@@ -117,8 +117,10 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
     public void onSongChanged(Song song) {
         updateMiniPlayerVisibility();
         if (song != null) {
+            String artistName = (song.getArtists() != null && !song.getArtists().isEmpty()) ? song.getArtists().get(0).getName() : "Unknown Artist";
+
             binding.miniPlayerTitle.setText(song.getTitle());
-            binding.miniPlayerArtist.setText(song.getArtist_names());
+            binding.miniPlayerArtist.setText(artistName);
             if (song.getCover_url() != null && !song.getCover_url().isEmpty()) {
                 Glide.with(this).load(song.getCover_url()).into(binding.miniPlayerImg);
             } else {

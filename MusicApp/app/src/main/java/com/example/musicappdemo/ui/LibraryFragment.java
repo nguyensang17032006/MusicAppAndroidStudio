@@ -186,7 +186,7 @@ public class LibraryFragment extends Fragment {
             
             // Tự động add các bài nhạc của artist vào Liked Songs
             for (Song song : allSongs) {
-                if (song.getArtist_names() != null && song.getArtist_names().contains(artist.getName())) {
+                if (song.getArtists().get(0).getName() != null && song.getArtists().get(0).getName().contains(artist.getName())) {
                     libraryManager.addLikedSong(song);
                 }
             }

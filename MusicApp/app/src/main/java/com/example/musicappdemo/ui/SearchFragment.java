@@ -6,11 +6,13 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,13 +48,13 @@ public class SearchFragment extends Fragment {
     private final List<Genre> allGenres = new ArrayList<>();
     private final List<Genre> recommendedGenres = new ArrayList<>();
     private final List<String> searchHistory = new ArrayList<>();
-    
+
     // Đổi SongAdapter sang một cái tương thích RecyclerView nếu cần, 
     // nhưng ở đây SongAdapter cũ là BaseAdapter dùng cho ListView.
     // Để nhanh nhất, mình sẽ dùng một Adapter mới cho RecyclerView hoặc đổi ListView lại.
     // Thực tế SongAdapter đang kế thừa BaseAdapter. Mình sẽ tạo một cái Adapter đơn giản cho Search.
     private SearchResultAdapter songAdapter;
-    private CategoryAdapter genreAdapter; 
+    private CategoryAdapter genreAdapter;
     private SearchHistoryAdapter historyAdapter;
 
     private static final String PREFS_NAME = "MusicAppPrefs";
@@ -109,10 +111,14 @@ public class SearchFragment extends Fragment {
 
         binding.gvCategories.setOnItemClickListener((parent, view, position, id) -> {
             Genre genre = recommendedGenres.get(position);
+            Log.d("SearchFragment", "Selected genre: " + genre.getName());
             List<Song> genrePlaylist = new ArrayList<>();
             for (Song s : allSongs) {
-                if (s.getGenre_names() != null && s.getGenre_names().contains(genre.getName())) {
-                    genrePlaylist.add(s);
+                if (s.getGenre() != null && !s.getGenre().isEmpty()) {
+                    String genreName = s.getGenre().get(0).getName();
+                    if (genreName != null && genreName.contains(genre.getName())) {
+                        genrePlaylist.add(s);
+                    }
                 }
             }
             if (!genrePlaylist.isEmpty()) {
@@ -171,7 +177,7 @@ public class SearchFragment extends Fragment {
     private void performSearch(String query) {
         hideKeyboard();
         saveSearchHistory(query);
-        
+
         filteredSongs.clear();
         recommendedGenres.clear();
         Set<String> foundGenreNames = new HashSet<>();
@@ -179,12 +185,12 @@ public class SearchFragment extends Fragment {
 
         for (Song song : allSongs) {
             String title = song.getTitle() != null ? song.getTitle().toLowerCase() : "";
-            String artists = song.getArtist_names() != null ? song.getArtist_names().toLowerCase() : "";
-            
+            String artists = song.getArtists() != null ? song.getArtists().get(0).getName().toLowerCase() : "";
+
             if (title.contains(lowerQuery) || artists.contains(lowerQuery)) {
                 filteredSongs.add(song);
-                if (song.getGenre_names() != null && !song.getGenre_names().isEmpty()) {
-                    String[] genres = song.getGenre_names().split(",");
+                if (song.getGenre() != null && !song.getGenre().isEmpty()) {
+                    String[] genres = song.getGenre().get(0).getName().split(",");
                     for (String g : genres) {
                         foundGenreNames.add(g.trim());
                     }
@@ -200,7 +206,7 @@ public class SearchFragment extends Fragment {
         } else {
             binding.rvSearchResults.setVisibility(View.VISIBLE);
             binding.tvNoResults.setVisibility(View.GONE);
-            
+
             // Tìm các đối tượng Genre tương ứng hoặc tạo mới nếu không thấy
             for (String genreName : foundGenreNames) {
                 Genre match = null;
@@ -214,11 +220,11 @@ public class SearchFragment extends Fragment {
                     recommendedGenres.add(match);
                 } else {
                     // Tạo Genre "ảo" nếu API không trả về nhưng bài hát có thể loại này
-                    Genre virtualGenre = new Genre(genreName); 
+                    Genre virtualGenre = new Genre(genreName);
                     recommendedGenres.add(virtualGenre);
                 }
             }
-            
+
             if (!recommendedGenres.isEmpty()) {
                 binding.defaultContent.setVisibility(View.VISIBLE);
                 genreAdapter.notifyDataSetChanged();

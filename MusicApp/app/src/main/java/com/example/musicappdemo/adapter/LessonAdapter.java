@@ -46,7 +46,7 @@ public class LessonAdapter extends RecyclerView.Adapter<LessonAdapter.LessonView
         public LessonViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvLessonTitle);
-            tvInfo = itemView.findViewById(R.id.tvLessonInfo);
+            tvInfo = itemView.findViewById(R.id.tvInfo);
         }
     }
 }

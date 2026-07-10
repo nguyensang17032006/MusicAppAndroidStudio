@@ -93,6 +93,7 @@ public class HomeFragment extends Fragment {
             public void onResponse(Call<SimpleResponse<List<Song>>> call, Response<SimpleResponse<List<Song>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<Song> allSongs = response.body().getData();
+
                     if (allSongs != null) {
                         // 1. Bài nhạc mới nhất (Giới hạn 5 bài)
                         List<Song> latestSongs = new ArrayList<>(allSongs);

@@ -46,6 +46,8 @@ public class GridAlbumAdapter extends BaseAdapter {
         }
 
         Song song = songList.get(position);
+        String artistName = (song.getArtists() != null && !song.getArtists().isEmpty()) ? song.getArtists().get(0).getName() : "Unknown Artist";
+
         ImageView img = convertView.findViewById(R.id.img_artwork);
         TextView title = convertView.findViewById(R.id.tv_title);
         TextView artist = convertView.findViewById(R.id.tv_subtitle);
@@ -53,7 +55,7 @@ public class GridAlbumAdapter extends BaseAdapter {
         ImageView btnMore = convertView.findViewById(R.id.btnMore);
 
         title.setText(song.getTitle());
-        artist.setText(song.getArtist_names());
+        artist.setText(artistName);
 
         if (song.getCover_url() != null && !song.getCover_url().isEmpty()) {
             Glide.with(context).load(song.getCover_url()).into(img);

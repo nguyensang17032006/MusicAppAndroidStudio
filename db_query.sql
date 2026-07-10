@@ -5,12 +5,14 @@
 CREATE DATABASE IF NOT EXISTS music_app_db;
 USE music_app_db;
 
+DROP TABLE IF EXISTS user_liked_songs;
+DROP TABLE IF EXISTS user_followed_artists;
 DROP TABLE IF EXISTS user_genre_preferences;
 DROP TABLE IF EXISTS interaction_logs;
 DROP TABLE IF EXISTS playlist_songs;
 DROP TABLE IF EXISTS playlists;
 DROP TABLE IF EXISTS song_genres;
-DROP TABLE IF EXISTS song_artists; 
+DROP TABLE IF EXISTS song_artists;
 DROP TABLE IF EXISTS songs;
 DROP TABLE IF EXISTS genres;
 DROP TABLE IF EXISTS artists;
