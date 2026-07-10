@@ -71,7 +71,7 @@ INSERT INTO song_artists (song_id, artist_id, is_main_artist) VALUES
 ('S010', 'A009', 1), ('S010','A020',1), ('S010','A021',1), ('S010','A022',1), ('S010','A024',1), -- Mashup: Làn Sóng Xanh
 ('S011', 'A010', 1), -- TRÊN TÌNH BẠN...: MIN
 ('S012', 'A011', 1), -- TUYỂN BẠN GÁI: OgeNus
-('S013', 'A012', 1), -- ANH SẼ ĐẾN TRONG GIẤC MƠ: Phùng Khánh Linh
+('S013', 'A019', 1), -- ANH SẼ ĐẾN TRONG GIẤC MƠ: Phùng Khánh Linh
 ('S014', 'A013', 1), -- VỖ TAY: Phương Ly
 ('S015', 'A014', 1),
 ('S016', 'A015', 1), -- PHỐ XA: Tăng Phúc
@@ -101,3 +101,7 @@ INSERT INTO song_genres (song_id, genre_id) VALUES
 ('S017', 'G001'), ('S017', 'G003'), -- tâm trí lang thang: Pop + Lofi Chill
 ('S018', 'G001'), ('S018', 'G004'), -- THẰNG ĐIÊN: Pop + R&B
 ('S019', 'G003');                 -- Ai Ngoài Anh: Lofi Chill 
+
+
+
+select * from users

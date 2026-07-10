@@ -104,6 +104,24 @@ CREATE TABLE user_genre_preferences (
     PRIMARY KEY (user_id, genre_id)
 );
 
+-- Thêm bảng Bài hát yêu thích
+CREATE TABLE user_liked_songs (
+    user_id VARCHAR(255) NOT NULL,
+    song_id VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, song_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
+);
+
+-- Thêm bảng Theo dõi nghệ sĩ
+CREATE TABLE user_followed_artists (
+    user_id VARCHAR(255) NOT NULL,
+    artist_id VARCHAR(50) NOT NULL,
+    PRIMARY KEY (user_id, artist_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE CASCADE
+);
 -- THIẾT LẬP RÀNG BUỘC KHÓA NGOẠI
 ALTER TABLE playlists ADD CONSTRAINT fk_playlists_users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE song_artists ADD CONSTRAINT fk_sa_songs FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE, ADD CONSTRAINT fk_sa_artists FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE CASCADE;

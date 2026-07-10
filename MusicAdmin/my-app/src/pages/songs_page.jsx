@@ -44,11 +44,12 @@ const API_GENRES_URL = 'http://localhost:3000/api/genres';
 
 // Helper to generate next ID
 const generateSongId = (songsList) => {
-    if (!songsList || songsList.length === 0) return 'S001';
+    if (!songsList || !Array.isArray(songsList) || songsList.length === 0) return 'S001';
     const ids = songsList
         .map(s => {
-            const match = s.id.match(/^S(\d+)$/);
-            return match ? parseInt(match[1], 10) : 0;
+            if (!s || !s.id) return 0;
+            const match = String(s.id).match(/\d+/);
+            return match ? parseInt(match[0], 10) : 0;
         })
         .filter(n => n > 0);
     const maxId = ids.length > 0 ? Math.max(...ids) : 0;
@@ -77,7 +78,8 @@ export default function SongsPage() {
             const artRes = await fetch(API_ARTISTS_URL).catch(() => null);
             if (artRes && artRes.ok) {
                 const artData = await artRes.json();
-                setArtists(artData);
+                const artList = Array.isArray(artData) ? artData : (artData && Array.isArray(artData.data) ? artData.data : []);
+                setArtists(artList);
             } else {
                 throw new Error("Artists API offline");
             }
@@ -87,7 +89,8 @@ export default function SongsPage() {
             const genRes = await fetch(API_GENRES_URL).catch(() => null);
             if (genRes && genRes.ok) {
                 const genData = await genRes.json();
-                setGenres(genData);
+                const genList = Array.isArray(genData) ? genData : (genData && Array.isArray(genData.data) ? genData.data : []);
+                setGenres(genList);
             } else {
                 throw new Error("Genres API offline");
             }
@@ -97,7 +100,8 @@ export default function SongsPage() {
             const songRes = await fetch(API_SONGS_URL);
             if (!songRes.ok) throw new Error("Songs API returned error");
             const songData = await songRes.json();
-            setSongs(songData);
+            const songList = Array.isArray(songData) ? songData : (songData && Array.isArray(songData.data) ? songData.data : []);
+            setSongs(songList);
 
         } catch (error) {
             console.warn("Backend offline. Loading local localStorage backups instead.", error);

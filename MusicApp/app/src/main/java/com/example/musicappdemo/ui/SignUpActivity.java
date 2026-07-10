@@ -61,9 +61,9 @@ public class SignUpActivity extends AppCompatActivity {
                 final String finalGender = gender;
                 AuthRequest request = new AuthRequest(email, password, finalGender);
 
-                RetrofitClient.getApiService().sendOtp(request).enqueue(new Callback<SimpleResponse<Void>>() {
+                RetrofitClient.getApiService().sendOtp(request).enqueue(new Callback<SimpleResponse>() {
                     @Override
-                    public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
+                    public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
                         if(response.isSuccessful() && response.body() != null && response.body().isSuccess()){
                             Toast.makeText(SignUpActivity.this, "Mã OTP đã được gửi !", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(SignUpActivity.this, VerifyEmailActivity.class);
@@ -78,7 +78,7 @@ public class SignUpActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {
+                    public void onFailure(Call<SimpleResponse> call, Throwable t) {
                         Toast.makeText(SignUpActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });

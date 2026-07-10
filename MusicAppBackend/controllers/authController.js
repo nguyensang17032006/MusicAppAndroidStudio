@@ -68,8 +68,6 @@ const verifyAndRegister = async (req, res) => {
             return res.status(500).json({ success: false, message: "Lỗi lưu database MySQL: " + dbErr.message });
         }
 
-        // BƯỚC C: Lưu thông tin vào MySQL
-        const query = `INSERT INTO users (id, email, gender) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE email=email`;
         try {
             await db.query(query, [supabaseUser.id, email, gender || null]);
 

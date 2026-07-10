@@ -21,6 +21,7 @@ const artistRoutes = require('./routes/artistRoutes');
 const genreRoutes = require('./routes/genreRoutes');
 const recommendRoutes = require('./routes/recommendRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const statsRoutes = require('./routes/statsRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/songs', songRoutes);
@@ -28,6 +29,7 @@ app.use('/api/artists', artistRoutes);
 app.use('/api/genres', genreRoutes);
 app.use('/api/recommendations', recommendRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/stats', statsRoutes);
 
 app.use((err, req, res, next) => {
     if (err) {
