@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.musicappdemo.R;
-import com.example.musicappdemo.databinding.ItemLessonBinding;
+import com.example.musicappdemo.databinding.ItemMusicBinding;
 import com.example.musicappdemo.model.Song;
 import com.example.musicappdemo.utils.LibraryManager;
 import com.example.musicappdemo.utils.MusicManager;
@@ -34,7 +34,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemLessonBinding binding = ItemLessonBinding.inflate(LayoutInflater.from(context), parent, false);
+        ItemMusicBinding binding = ItemMusicBinding.inflate(LayoutInflater.from(context), parent, false);
         return new ViewHolder(binding);
     }
 
@@ -109,9 +109,9 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ItemLessonBinding binding;
+        ItemMusicBinding binding;
 
-        public ViewHolder(ItemLessonBinding binding) {
+        public ViewHolder(ItemMusicBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

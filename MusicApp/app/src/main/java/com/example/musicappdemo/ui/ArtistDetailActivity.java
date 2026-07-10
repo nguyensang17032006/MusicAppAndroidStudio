@@ -60,8 +60,13 @@ public class ArtistDetailActivity extends AppCompatActivity {
                     if (allSongs != null) {
                         artistSongs.clear();
                         for (Song song : allSongs) {
-                            if (song.getArtists()!= null && song.getArtists().contains(artistName)) {
-                                artistSongs.add(song);
+                            if (song.getArtists() != null) {
+                                for (com.example.musicappdemo.model.Artist artist : song.getArtists()) {
+                                    if (artist.getName() != null && artist.getName().equalsIgnoreCase(artistName)) {
+                                        artistSongs.add(song);
+                                        break;
+                                    }
+                                }
                             }
                         }
                         adapter.notifyDataSetChanged();

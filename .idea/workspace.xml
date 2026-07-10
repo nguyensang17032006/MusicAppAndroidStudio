@@ -5,10 +5,33 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5dcb65d0-dba3-4db8-86a2-0e9d86c31776" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/SwipeToDeleteCallback.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/drawable/bg_search_input.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/drawable/ic_delete.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/.idea/planningMode.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/.idea/planningMode.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/LessonAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/LessonAdapter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/LessonListViewAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/LessonListViewAdapter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/PlaylistAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/PlaylistAdapter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/PlaylistLibraryAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/PlaylistLibraryAdapter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/SearchResultAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/SearchResultAdapter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/SongAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/SongAdapter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/ApiService.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/ApiService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/RetrofitClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/RetrofitClient.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/SessionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/SessionManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/model/auth/SupabaseUser.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/model/auth/SupabaseUser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/LibraryFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/LibraryFragment.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/ProfileActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/ProfileActivity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/LibraryManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/LibraryManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/dialog_add_artist.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/dialog_add_artist.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/fragment_library.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/fragment_library.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/item_lesson.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/item_music.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicAppBackend/config/supabase.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/config/supabase.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicAppBackend/controllers/authController.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/controllers/authController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicAppBackend/controllers/libraryController.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/controllers/libraryController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicAppBackend/routes/libraryRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/routes/libraryRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicAppBackend/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/server.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -12,6 +12,7 @@ public class SessionManager {
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_EMAIL = "email";
     private static final String KEY_GENDER = "gender";
+    private static final String KEY_AVATAR = "avatar_uri";
 
     private static SessionManager instance;
     private final SharedPreferences prefs;
@@ -55,6 +56,14 @@ public class SessionManager {
 
     public String getGender() {
         return prefs.getString(KEY_GENDER, null);
+    }
+
+    public void saveAvatarUri(String uri) {
+        prefs.edit().putString(KEY_AVATAR, uri).apply();
+    }
+
+    public String getAvatarUri() {
+        return prefs.getString(KEY_AVATAR, null);
     }
 
     public boolean isLoggedIn() {
