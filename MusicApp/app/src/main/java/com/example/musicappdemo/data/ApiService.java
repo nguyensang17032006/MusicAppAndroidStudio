@@ -6,6 +6,7 @@ import com.example.musicappdemo.model.Playlist;
 import com.example.musicappdemo.model.Song;
 import com.example.musicappdemo.model.auth.AuthRequest;
 import com.example.musicappdemo.model.auth.AuthResponse;
+import com.example.musicappdemo.model.auth.NewPasswordRequest;
 import com.example.musicappdemo.model.auth.RegisterOtpRequest;
 
 import java.util.List;
@@ -36,6 +37,15 @@ public interface ApiService {
     // 2. API xác thực mã OTP + đặt mật khẩu + tạo user trong MySQL
     @POST("api/auth/verify-and-register")
     Call<AuthResponse> verifyAndRegister(@Body RegisterOtpRequest request);
+
+    @POST("api/auth/forgot-password/send-otp")
+    Call<SimpleResponse> sendOtpForgotPassword(@Body AuthRequest request);
+
+    @POST("api/auth/forgot-password/verify")
+    Call<AuthResponse> verifyOtpForgotPassword(@Body RegisterOtpRequest request);
+
+    @POST("api/auth/forgot-password/newpassword")
+    Call<SimpleResponse> updateNewPassword(@Body NewPasswordRequest request);
 
     // 3. API đăng nhập truyền thống bằng Email & Mật khẩu
     @POST("api/auth/login")

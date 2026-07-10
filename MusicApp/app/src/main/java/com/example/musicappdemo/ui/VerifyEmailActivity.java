@@ -36,9 +36,14 @@ public class VerifyEmailActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         // 1. Hứng dữ liệu từ SignUpActivity chuyển sang
-        email = getIntent().getStringExtra("email");
-        gender = getIntent().getStringExtra("gender");
-        password = getIntent().getStringExtra("password");
+        String type = getIntent().getStringExtra("type");
+        if ("signup".equals(type)) {
+            email = getIntent().getStringExtra("email");
+            gender = getIntent().getStringExtra("gender");
+            password = getIntent().getStringExtra("password");
+        } else {
+            email = getIntent().getStringExtra("email");
+        }
 
         // Kích hoạt bộ đếm ngược 60s ngay khi vừa vào màn hình này
         startResendTimer();
@@ -52,76 +57,131 @@ public class VerifyEmailActivity extends AppCompatActivity {
                 return;
             }
 
-            RegisterOtpRequest request = new RegisterOtpRequest(email, otpCode, password, gender);
-
-            RetrofitClient.getApiService().verifyAndRegister(request).enqueue(new Callback<AuthResponse>() {
-                @Override
-                public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
-                    try {
-                        if (response.raw().body() != null) {
-                            System.out.println("👉 Chuỗi JSON thô từ Node.js: " + response.raw().toString());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                    // 🚀 IN LOG KIỂM TRA BODY CÓ BỊ NULL KHÔNG
-                    System.out.println("👉 response.isSuccessful(): " + response.isSuccessful());
-                    System.out.println("👉 response.body() có bị null không?: " + (response.body() == null));
-                    if (response.isSuccessful() && response.body() != null) {
-                        if (countDownTimer != null) countDownTimer.cancel(); // Tắt đếm ngược nếu thành công
-
-                        AuthResponse authResponse = response.body();
-                        SessionManager.get(VerifyEmailActivity.this).save(authResponse);
-
-                        Toast.makeText(VerifyEmailActivity.this, "Xác thực thành công! Chào mừng bạn.", Toast.LENGTH_SHORT).show();
-
-                        Intent intent = new Intent(VerifyEmailActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Toast.makeText(VerifyEmailActivity.this, "Mã OTP không chính xác hoặc đã hết hạn!", Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<AuthResponse> call, Throwable t) {
-                    Toast.makeText(VerifyEmailActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+            if ("signup".equals(type)) {
+                performRegisterVerify(otpCode);
+            } else {
+                performForgotPasswordVerify(otpCode);
+            }
         });
 
-        // 3. Xử lý sự kiện bấm "Gửi lại mã" (Resend OTP)
-        // ⚠️ Hãy đổi lại ID 'tvResendOtp' đúng với ID TextView/Button trong file XML của bạn nhé!
-        binding.txtResendCode.setOnClickListener(v -> {
-            if (isTimerRunning) {
-                // Nếu đang đếm ngược thì không cho bấm gửi lại
-                return;
+        setupResendCode(type);
+    }
+
+    private void performRegisterVerify(String otpCode) {
+        RegisterOtpRequest request = new RegisterOtpRequest(email, otpCode, password, gender);
+        RetrofitClient.getApiService().verifyAndRegister(request).enqueue(new Callback<AuthResponse>() {
+            @Override
+            public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
+                System.out.println("👉 Register Verify HTTP Code: " + response.code());
+
+                if (response.isSuccessful() && response.body() != null) {
+                    AuthResponse authResponse = response.body();
+
+                    // Kiểm tra xem token trả về có bị null không
+                    if (authResponse.accessToken == null || authResponse.accessToken.isEmpty()) {
+                        Toast.makeText(VerifyEmailActivity.this, "Lỗi: Server không trả về token đăng nhập!", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    if (countDownTimer != null) countDownTimer.cancel(); // Tắt đếm ngược
+
+                    // Lưu session đăng nhập vào máy
+                    SessionManager.get(VerifyEmailActivity.this).save(authResponse);
+
+                    Toast.makeText(VerifyEmailActivity.this, "Xác thực đăng ký thành công!", Toast.LENGTH_SHORT).show();
+
+                    // Bế vào MainActivity
+                    Intent intent = new Intent(VerifyEmailActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(VerifyEmailActivity.this, "Mã OTP đăng ký không chính xác hoặc đã hết hạn!", Toast.LENGTH_LONG).show();
+                }
             }
 
-            // Gọi API Node.js để gửi lại OTP mới
-            AuthRequest authRequest = new AuthRequest(email,password,gender);
+            @Override
+            public void onFailure(Call<AuthResponse> call, Throwable t) {
+                Toast.makeText(VerifyEmailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
-            RetrofitClient.getApiService().sendOtp(authRequest).enqueue(new Callback<SimpleResponse>() {
-                @Override
-                public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(VerifyEmailActivity.this, "Mã OTP mới đã được gửi!", Toast.LENGTH_SHORT).show();
-                        // Kích hoạt lại bộ đếm ngược 60s
-                        startResendTimer();
-                    } else {
-                        Toast.makeText(VerifyEmailActivity.this, "Gửi lại mã thất bại, vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+    private void performForgotPasswordVerify(String otpCode) {
+        RegisterOtpRequest request = new RegisterOtpRequest(email, otpCode, null, null);
+
+        // Đổi kiểu Callback từ SimpleResponse thành AuthResponse
+        RetrofitClient.getApiService().verifyOtpForgotPassword(request).enqueue(new Callback<AuthResponse>() {
+            @Override
+            public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    if (countDownTimer != null) countDownTimer.cancel();
+                    Toast.makeText(VerifyEmailActivity.this, "Xác thực thành công!", Toast.LENGTH_SHORT).show();
+
+                    // Lấy Access Token tạm thời do Node.js trả về
+                    AuthResponse authResponse = response.body();
+                    String tokenTamThoi = authResponse.accessToken; // Đảm bảo class AuthResponse của bạn có hàm này (hoặc biến public)
+
+                    // Chuyển sang màn hình ResetPassword và đính kèm Token + Email
+                    Intent intent = new Intent(VerifyEmailActivity.this, ResetPasswordActivity.class);
+                    intent.putExtra("access_token", tokenTamThoi);
+                    Toast.makeText(VerifyEmailActivity.this,""+ tokenTamThoi,Toast.LENGTH_SHORT).show();
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(VerifyEmailActivity.this, "Mã OTP không chính xác hoặc đã hết hạn!", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AuthResponse> call, Throwable t) {
+                Toast.makeText(VerifyEmailActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+        // 3. Xử lý sự kiện bấm "Gửi lại mã" (Resend OTP)
+    private void setupResendCode(String type) {
+        binding.txtResendCode.setOnClickListener(v -> {
+            if (isTimerRunning) return;
+
+            if ("signup".equals(type)) {
+                AuthRequest authRequest = new AuthRequest(email, password, gender);
+                RetrofitClient.getApiService().sendOtp(authRequest).enqueue(new Callback<SimpleResponse>() {
+                    @Override
+                    public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(VerifyEmailActivity.this, "Mã OTP mới đã được gửi!", Toast.LENGTH_SHORT).show();
+                            startResendTimer();
+                        } else {
+                            Toast.makeText(VerifyEmailActivity.this, "Gửi lại mã thất bại!", Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
 
-                @Override
-                public void onFailure(Call<SimpleResponse> call, Throwable t) {
-                    Toast.makeText(VerifyEmailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+                    @Override
+                    public void onFailure(Call<SimpleResponse> call, Throwable t) {
+                        Toast.makeText(VerifyEmailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                AuthRequest authRequest = new AuthRequest(email, null, null);
+                RetrofitClient.getApiService().sendOtpForgotPassword(authRequest).enqueue(new Callback<SimpleResponse>() {
+                    @Override
+                    public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(VerifyEmailActivity.this, "Mã OTP khôi phục đã được gửi!", Toast.LENGTH_SHORT).show();
+                            startResendTimer();
+                        } else {
+                            Toast.makeText(VerifyEmailActivity.this, "Gửi lại mã thất bại!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
 
-
+                    @Override
+                    public void onFailure(Call<SimpleResponse> call, Throwable t) {
+                        Toast.makeText(VerifyEmailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         });
     }
 
