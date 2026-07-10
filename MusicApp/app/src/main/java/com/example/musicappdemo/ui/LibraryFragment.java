@@ -18,8 +18,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import androidx.core.content.ContextCompat;
 
 import com.example.musicappdemo.R;
 import com.example.musicappdemo.adapter.ArtistAdapter;
@@ -59,6 +67,7 @@ public class LibraryFragment extends Fragment {
     private LibraryMode currentMode = LibraryMode.PLAYLISTS;
 
     private String currentSortMode = "Recently Added"; // "A-Z" or "Recently Added"
+    private String currentSearchQuery = "";
 
     @Nullable
     @Override
@@ -101,6 +110,8 @@ public class LibraryFragment extends Fragment {
         binding.rvPlaylists.setAdapter(playlistAdapter);
         binding.rvPlaylists.setNestedScrollingEnabled(false);
 
+        setupSwipeToDelete();
+
         // Artists
         artistAdapter = new ArtistAdapter(getContext(), displayArtists, artist -> {
             Intent intent = new Intent(getActivity(), ArtistDetailActivity.class);
@@ -113,6 +124,34 @@ public class LibraryFragment extends Fragment {
     }
 
     private void setupEvents() {
+        binding.btnLibrarySearch.setOnClickListener(v -> {
+            if (binding.etLibrarySearch.getVisibility() == View.VISIBLE) {
+                binding.etLibrarySearch.setVisibility(View.GONE);
+                binding.tvLibraryTitle.setVisibility(View.VISIBLE);
+                binding.etLibrarySearch.setText("");
+                currentSearchQuery = "";
+                filterLibrary();
+            } else {
+                binding.etLibrarySearch.setVisibility(View.VISIBLE);
+                binding.tvLibraryTitle.setVisibility(View.GONE);
+                binding.etLibrarySearch.requestFocus();
+            }
+        });
+
+        binding.etLibrarySearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                currentSearchQuery = s.toString().toLowerCase().trim();
+                filterLibrary();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
         binding.btnLikedSongs.setOnClickListener(v -> {
             List<Song> likedSongs = LibraryManager.getInstance(getContext()).getLikedSongs();
             Intent intent = new Intent(getActivity(), PlaylistDetailActivity.class);
@@ -155,6 +194,7 @@ public class LibraryFragment extends Fragment {
             
             binding.chipPlaylists.setAlpha(1.0f);
             binding.chipArtists.setAlpha(0.5f);
+            filterLibrary();
         } else {
             binding.rvPlaylists.setVisibility(View.GONE);
             binding.rvArtists.setVisibility(View.VISIBLE);
@@ -165,6 +205,7 @@ public class LibraryFragment extends Fragment {
 
             binding.chipPlaylists.setAlpha(0.5f);
             binding.chipArtists.setAlpha(1.0f);
+            filterLibrary();
         }
     }
 
@@ -277,16 +318,129 @@ public class LibraryFragment extends Fragment {
         popupMenu.show();
     }
 
+    private void setupSwipeToDelete() {
+        ItemTouchHelper.SimpleCallback swipeHandler = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            private final Paint paint = new Paint();
+            private final Rect textBounds = new Rect();
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                boolean isPlaylist = viewHolder.getBindingAdapter() == playlistAdapter;
+
+                if (isPlaylist) {
+                    Playlist playlist = playlists.get(position);
+                    new AlertDialog.Builder(getContext())
+                            .setTitle("Xóa playlist")
+                            .setMessage("Bạn có chắc chắn muốn xóa playlist \"" + playlist.getName() + "\"?")
+                            .setPositiveButton("Xóa", (dialog, which) -> LibraryManager.getInstance(getContext()).deletePlaylist(playlist.getId()))
+                            .setNegativeButton("Hủy", (dialog, which) -> playlistAdapter.notifyItemChanged(position))
+                            .setCancelable(false)
+                            .show();
+                } else {
+                    Artist artist = displayArtists.get(position);
+                    new AlertDialog.Builder(getContext())
+                            .setTitle("Bỏ theo dõi")
+                            .setMessage("Bạn có chắc chắn muốn bỏ theo dõi nghệ sĩ \"" + artist.getName() + "\"?")
+                            .setPositiveButton("Bỏ theo dõi", (dialog, which) -> LibraryManager.getInstance(getContext()).unfollowArtist(artist.getId()))
+                            .setNegativeButton("Hủy", (dialog, which) -> artistAdapter.notifyItemChanged(position))
+                            .setCancelable(false)
+                            .show();
+                }
+            }
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && dX < 0) {
+                    View itemView = viewHolder.itemView;
+                    
+                    // 1. Draw Red Background (Giới hạn chỉ rộng tối đa 50% itemView)
+                    paint.setColor(Color.parseColor("#B0273F"));
+                    float backgroundLeft = Math.max((float) itemView.getRight() + dX, (float) itemView.getRight() - (itemView.getWidth() / 2f));
+                    c.drawRect(backgroundLeft, (float) itemView.getTop(), (float) itemView.getRight(), (float) itemView.getBottom(), paint);
+
+                    // 2. Draw Trash Icon (Căn giữa trong vùng 50%)
+                    Drawable icon = ContextCompat.getDrawable(getContext(), R.drawable.ic_delete);
+                    if (icon != null) {
+                        int itemHeight = itemView.getBottom() - itemView.getTop();
+                        int intrinsicWidth = icon.getIntrinsicWidth();
+                        int intrinsicHeight = icon.getIntrinsicHeight();
+
+                        // Vùng 50% bên phải
+                        float halfWidthAreaLeft = itemView.getRight() - (itemView.getWidth() / 2f);
+                        float centerXInRed = halfWidthAreaLeft + (itemView.getWidth() / 4f);
+
+                        int iconLeft = (int) (centerXInRed - (intrinsicWidth / 2f));
+                        int iconRight = iconLeft + intrinsicWidth;
+                        int iconTop = itemView.getTop() + (itemHeight - intrinsicHeight) / 2 - 20;
+                        int iconBottom = iconTop + intrinsicHeight;
+
+                        icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
+                        icon.setTint(Color.WHITE);
+                        icon.draw(c);
+
+                        // 3. Draw "Xóa" Text
+                        paint.setColor(Color.WHITE);
+                        paint.setTextSize(32);
+                        paint.setAntiAlias(true);
+                        paint.setTextAlign(Paint.Align.CENTER);
+                        String text = "Xóa";
+                        paint.getTextBounds(text, 0, text.length(), textBounds);
+                        float textX = centerXInRed;
+                        float textY = iconBottom + textBounds.height() + 10;
+                        c.drawText(text, textX, textY, paint);
+                    }
+                }
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
+
+            @Override
+            public float getSwipeThreshold(@NonNull RecyclerView.ViewHolder viewHolder) {
+                return 0.5f; // Vuốt đúng 50% màn hình mới kích hoạt xóa
+            }
+        };
+
+        new ItemTouchHelper(swipeHandler).attachToRecyclerView(binding.rvPlaylists);
+        new ItemTouchHelper(swipeHandler).attachToRecyclerView(binding.rvArtists);
+    }
+
     private void applySort() {
-        displayArtists.clear();
-        displayArtists.addAll(followedArtists);
-        if (currentSortMode.equals("A-Z")) {
-            Collections.sort(displayArtists, (a1, a2) -> a1.getName().compareToIgnoreCase(a2.getName()));
+        filterLibrary();
+    }
+
+    private void filterLibrary() {
+        if (currentMode == LibraryMode.PLAYLISTS) {
+            List<Playlist> filteredPlaylists = new ArrayList<>();
+            for (Playlist p : playlists) {
+                if (p.getName().toLowerCase().contains(currentSearchQuery)) {
+                    filteredPlaylists.add(p);
+                }
+            }
+            // Sort playlists if needed (default is by name or recently added)
+            if (currentSortMode.equals("A-Z")) {
+                Collections.sort(filteredPlaylists, (p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()));
+            }
+            playlistAdapter.updateList(filteredPlaylists);
         } else {
-            Collections.sort(displayArtists, (a1, a2) -> Long.compare(a2.getAddedTime(), a1.getAddedTime()));
-        }
-        if (artistAdapter != null) {
-            artistAdapter.notifyDataSetChanged();
+            displayArtists.clear();
+            for (Artist a : followedArtists) {
+                if (a.getName().toLowerCase().contains(currentSearchQuery)) {
+                    displayArtists.add(a);
+                }
+            }
+            if (currentSortMode.equals("A-Z")) {
+                Collections.sort(displayArtists, (a1, a2) -> a1.getName().compareToIgnoreCase(a2.getName()));
+            } else {
+                Collections.sort(displayArtists, (a1, a2) -> Long.compare(a2.getAddedTime(), a1.getAddedTime()));
+            }
+            if (artistAdapter != null) {
+                artistAdapter.notifyDataSetChanged();
+            }
         }
     }
 

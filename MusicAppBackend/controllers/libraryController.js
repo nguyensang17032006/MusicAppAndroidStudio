@@ -70,35 +70,87 @@ const getUserPlaylists = async (req, res) => {
 
 const createPlaylist = async (req, res) => {
     const { userId, name } = req.body;
-    console.log("Creating playlist for user:", userId, "Name:", name);
+    console.log("Creating playlist request - User:", userId, "Name:", name);
+
     if (!userId || !name) {
         return res.status(400).json({ success: false, message: "Missing userId or playlist name" });
     }
+
     try {
-        // Tự tạo ID vì DB không có AUTO_INCREMENT (Ví dụ: P171567890123)
-        const playlistId = 'P' + Date.now();
+        // Lấy ID cao nhất hiện tại để tạo ID mới dạng Pxxx
+        const [lastPlaylist] = await db.query('SELECT id FROM playlists ORDER BY id DESC LIMIT 1');
+        let newIdNumber = 1;
+        if (lastPlaylist.length > 0) {
+            const lastId = lastPlaylist[0].id;
+            if (lastId.startsWith('P')) {
+                newIdNumber = parseInt(lastId.substring(1)) + 1;
+            }
+        }
+        const playlistId = 'P' + String(newIdNumber).padStart(3, '0');
+
+        // Kiểm tra xem user có tồn tại trong MySQL không trước khi tạo playlist
+        const [userCheck] = await db.query('SELECT id FROM users WHERE id = ?', [userId]);
+        if (userCheck.length === 0) {
+            console.error("User not found in MySQL:", userId);
+            return res.status(404).json({ success: false, message: "User not found. Please login again." });
+        }
+
         const [result] = await db.query('INSERT INTO playlists (id, user_id, name) VALUES (?, ?, ?)', [playlistId, userId, name]);
+        console.log("Successfully created playlist in MySQL:", playlistId);
+
         res.status(201).json({
             success: true,
-            message: "Playlist created",
+            message: "Playlist created successfully",
             data: { id: playlistId, name, songs: [] }
         });
     } catch (error) {
         console.error("Error in createPlaylist:", error);
+        res.status(500).json({ success: false, message: "Server error: " + error.message });
+    }
+};
+
+const deletePlaylist = async (req, res) => {
+    const { playlistId } = req.body;
+    if (!playlistId) {
+        return res.status(400).json({ success: false, message: "Missing playlistId" });
+    }
+    try {
+        // First delete all songs in the playlist due to foreign key constraints
+        await db.query('DELETE FROM playlist_songs WHERE playlist_id = ?', [playlistId]);
+        // Then delete the playlist itself
+        await db.query('DELETE FROM playlists WHERE id = ?', [playlistId]);
+        res.status(200).json({ success: true, message: 'Playlist deleted successfully' });
+    } catch (error) {
+        console.error("Error in deletePlaylist:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
 const addSongToPlaylist = async (req, res) => {
     const { playlistId, songId } = req.body;
+    console.log("Adding song to playlist - Playlist:", playlistId, "Song:", songId);
+
+    if (!playlistId || !songId) {
+        return res.status(400).json({ success: false, message: "Missing playlistId or songId" });
+    }
+
     try {
+        // Kiểm tra xem bài hát đã có trong playlist chưa (tránh duplicate)
+        const [duplicateCheck] = await db.query('SELECT * FROM playlist_songs WHERE playlist_id = ? AND song_id = ?', [playlistId, songId]);
+        if (duplicateCheck.length > 0) {
+            return res.status(200).json({ success: true, message: 'Song already in playlist' });
+        }
+
         await db.query('INSERT INTO playlist_songs (playlist_id, song_id) VALUES (?, ?)', [playlistId, songId]);
+        console.log("Successfully added song to playlist in MySQL");
+
         res.status(200).json({ success: true, message: 'Added to playlist' });
     } catch (error) {
         console.error("Error in addSongToPlaylist:", error);
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: "Server error: " + error.message });
     }
 };
+
 
 // FOLLOWED ARTISTS
 const getFollowedArtists = async (req, res) => {
@@ -118,17 +170,44 @@ const getFollowedArtists = async (req, res) => {
 };
 
 const toggleFollowArtist = async (req, res) => {
-    const { userId, artistId } = req.body;
-    if (!userId || !artistId) {
-        return res.status(400).json({ success: false, message: "Missing userId or artistId" });
+    const { userId, artistId, artistName } = req.body;
+    if (!userId) {
+        return res.status(400).json({ success: false, message: "Missing userId" });
     }
+
     try {
-        const [existing] = await db.query('SELECT * FROM user_followed_artists WHERE user_id = ? AND artist_id = ?', [userId, artistId]);
-        if (existing.length > 0) {
-            await db.query('DELETE FROM user_followed_artists WHERE user_id = ? AND artist_id = ?', [userId, artistId]);
+        let finalArtistId = artistId;
+
+        // Nếu không có artistId nhưng có artistName, kiểm tra hoặc tạo mới artist
+        if (!finalArtistId && artistName) {
+            const [existing] = await db.query('SELECT id FROM artists WHERE name = ?', [artistName]);
+            if (existing.length > 0) {
+                finalArtistId = existing[0].id;
+            } else {
+                // Tạo ID Axxx
+                const [lastArtist] = await db.query('SELECT id FROM artists ORDER BY id DESC LIMIT 1');
+                let newIdNumber = 1;
+                if (lastArtist.length > 0) {
+                    const lastId = lastArtist[0].id;
+                    if (lastId.startsWith('A')) {
+                        newIdNumber = parseInt(lastId.substring(1)) + 1;
+                    }
+                }
+                finalArtistId = 'A' + String(newIdNumber).padStart(3, '0');
+                await db.query('INSERT INTO artists (id, name) VALUES (?, ?)', [finalArtistId, artistName]);
+            }
+        }
+
+        if (!finalArtistId) {
+            return res.status(400).json({ success: false, message: "Missing artistId or artistName" });
+        }
+
+        const [existingFollow] = await db.query('SELECT * FROM user_followed_artists WHERE user_id = ? AND artist_id = ?', [userId, finalArtistId]);
+        if (existingFollow.length > 0) {
+            await db.query('DELETE FROM user_followed_artists WHERE user_id = ? AND artist_id = ?', [userId, finalArtistId]);
             res.status(200).json({ success: true, message: 'Unfollowed artist', isFollowed: false });
         } else {
-            await db.query('INSERT INTO user_followed_artists (user_id, artist_id) VALUES (?, ?)', [userId, artistId]);
+            await db.query('INSERT INTO user_followed_artists (user_id, artist_id) VALUES (?, ?)', [userId, finalArtistId]);
             res.status(200).json({ success: true, message: 'Followed artist', isFollowed: true });
         }
     } catch (error) {
@@ -142,6 +221,7 @@ module.exports = {
     toggleLikeSong,
     getUserPlaylists,
     createPlaylist,
+    deletePlaylist,
     addSongToPlaylist,
     getFollowedArtists,
     toggleFollowArtist

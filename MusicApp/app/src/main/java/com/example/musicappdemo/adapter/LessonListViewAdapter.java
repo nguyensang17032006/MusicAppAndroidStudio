@@ -40,7 +40,7 @@ public class LessonListViewAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_lesson, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_music, parent, false);
         }
 
         Lesson lesson = (Lesson) getItem(position);

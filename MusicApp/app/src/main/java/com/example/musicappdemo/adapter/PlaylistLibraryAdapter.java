@@ -55,6 +55,11 @@ public class PlaylistLibraryAdapter extends RecyclerView.Adapter<PlaylistLibrary
         return playlists.size();
     }
 
+    public void updateList(List<Playlist> newList) {
+        this.playlists = newList;
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ItemPlaylistLibraryBinding binding;
 

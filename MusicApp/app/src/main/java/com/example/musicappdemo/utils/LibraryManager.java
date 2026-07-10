@@ -187,6 +187,15 @@ public class LibraryManager {
         String userId = getUserId();
         if (userId == null) return;
 
+        // Kiểm tra trùng tên local trước khi gọi API
+        List<Playlist> currentPlaylists = getPlaylists();
+        for (Playlist p : currentPlaylists) {
+            if (p.getName().equalsIgnoreCase(name)) {
+                showToast("Tên playlist đã tồn tại!");
+                return;
+            }
+        }
+
         Map<String, String> body = new HashMap<>();
         body.put("userId", userId);
         body.put("name", name);
@@ -238,6 +247,30 @@ public class LibraryManager {
         });
     }
 
+    public void deletePlaylist(String playlistId) {
+        String userId = getUserId();
+        if (userId == null) return;
+
+        Map<String, String> body = new HashMap<>();
+        body.put("userId", userId);
+        body.put("playlistId", playlistId);
+        RetrofitClient.getApiService().deletePlaylist(body).enqueue(new Callback<SimpleResponse<Void>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    syncPlaylists();
+                    showToast("Đã xóa playlist");
+                } else {
+                    showToast("Lỗi khi xóa playlist");
+                }
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {
+                showToast("Lỗi kết nối");
+            }
+        });
+    }
+
     // --- ARTISTS ---
     public List<Artist> getFollowedArtists() {
         String userId = getUserId();
@@ -266,20 +299,51 @@ public class LibraryManager {
     }
 
     public void followArtist(Artist artist) {
+        followArtist(artist.getId(), artist.getName());
+    }
+
+    public void followArtist(String artistId, String artistName) {
         String userId = getUserId();
         if (userId == null) return;
 
         Map<String, String> body = new HashMap<>();
         body.put("userId", userId);
-        body.put("artistId", artist.getId());
+        if (artistId != null) body.put("artistId", artistId);
+        if (artistName != null) body.put("artistName", artistName);
+
         RetrofitClient.getApiService().toggleFollowArtist(body).enqueue(new Callback<SimpleResponse<Void>>() {
             @Override
             public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
                 if (response.isSuccessful()) {
                     syncFollowedArtists();
-                    showToast("Đã theo dõi: " + artist.getName());
+                    // Nếu đã là follower thì hành động là unfollow, nếu chưa thì là follow
+                    // API toggle nên chúng ta chỉ refresh
                 } else {
-                    showToast("Lỗi khi theo dõi nghệ sĩ");
+                    showToast("Lỗi khi thực hiện thao tác");
+                }
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {
+                showToast("Lỗi kết nối");
+            }
+        });
+    }
+
+    public void unfollowArtist(String artistId) {
+        String userId = getUserId();
+        if (userId == null) return;
+
+        Map<String, String> body = new HashMap<>();
+        body.put("userId", userId);
+        body.put("artistId", artistId);
+        RetrofitClient.getApiService().toggleFollowArtist(body).enqueue(new Callback<SimpleResponse<Void>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    syncFollowedArtists();
+                    showToast("Đã bỏ theo dõi nghệ sĩ");
+                } else {
+                    showToast("Lỗi khi bỏ theo dõi");
                 }
             }
             @Override
