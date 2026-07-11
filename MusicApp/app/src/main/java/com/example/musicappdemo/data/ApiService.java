@@ -82,4 +82,10 @@ public interface ApiService {
 
     @POST("api/auth/update-profile")
     Call<SimpleResponse<Void>> updateProfile(@Body Map<String, String> body);
+
+    @POST("api/streak/track-time")
+    Call<SimpleResponse<com.example.musicappdemo.model.UserStreak>> trackStreakTime(@Body Map<String, Object> body);
+
+    @GET("api/streak/{userId}")
+    Call<SimpleResponse<com.example.musicappdemo.model.UserStreak>> getUserStreak(@Path("userId") String userId);
 }

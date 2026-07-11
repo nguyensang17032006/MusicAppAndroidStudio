@@ -87,8 +87,14 @@ public class PlayerActivity extends AppCompatActivity implements MusicManager.On
             } else {
                 binding.imgArtwork.setImageResource(R.drawable.placeholder_img);
             }
-            binding.seekBar.setMax(MusicManager.getInstance().getDuration());
-            binding.tvTotalTime.setText(formatTime(MusicManager.getInstance().getDuration()));
+
+            // Reset progress UI immediately to avoid showing old values during startup lag
+            binding.seekBar.setProgress(0);
+            binding.tvCurrentTime.setText("00:00");
+
+            int duration = MusicManager.getInstance().getDuration();
+            binding.seekBar.setMax(duration);
+            binding.tvTotalTime.setText(formatTime(duration));
         }
     }
 
@@ -148,6 +154,12 @@ public class PlayerActivity extends AppCompatActivity implements MusicManager.On
             updateUI(currentSong);
             updatePlayStatus(MusicManager.getInstance().isPlaying());
             updateControlButtons();
+
+            // Sync with current playing position immediately on resume
+            int currentPos = MusicManager.getInstance().getCurrentPosition();
+            binding.seekBar.setProgress(currentPos);
+            binding.tvCurrentTime.setText(formatTime(currentPos));
+
             if (playlistAdapter != null) {
                 playlistAdapter.setPlayingIndex(MusicManager.getInstance().getCurrentIndex());
             }

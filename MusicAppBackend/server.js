@@ -23,6 +23,27 @@ const recommendRoutes = require('./routes/recommendRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const statsRoutes = require('./routes/statsRoutes');
 const libraryRoutes = require('./routes/libraryRoutes');
+const streakRoutes = require('./routes/streakRoutes');
+const { startStreakCron } = require('./utils/streakCron');
+
+// Run table creation check on startup
+db.query(`
+    CREATE TABLE IF NOT EXISTS user_streaks (
+        user_id VARCHAR(255) PRIMARY KEY,
+        current_streak INT DEFAULT 0,
+        max_streak INT DEFAULT 0,
+        last_completed_date DATE NULL,
+        today_listening_time INT DEFAULT 0,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );
+`).then(() => {
+    console.log("Database table 'user_streaks' initialized successfully.");
+}).catch(err => {
+    console.error("Error creating table 'user_streaks':", err.message);
+});
+
+// Start streak cron job
+startStreakCron();
 
 app.use('/api/auth', authRoutes);
 app.use('/api/songs', songRoutes);
@@ -32,6 +53,7 @@ app.use('/api/recommendations', recommendRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/library', libraryRoutes);
+app.use('/api/streak', streakRoutes);
 
 app.use((err, req, res, next) => {
     if (err) {

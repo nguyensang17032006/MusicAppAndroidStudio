@@ -156,15 +156,21 @@ public class MusicManager {
             });
             mediaPlayer.setOnErrorListener((mp, what, extra) -> {
                 Log.e("MusicManager", "MediaPlayer Error: what=" + what + " extra=" + extra);
-                return false;
+                return true; // Handle error and prevent triggering onCompletion
             });
             mediaPlayer.setOnCompletionListener(mp -> {
+                try {
+                    int currentPos = mp.getCurrentPosition();
+                    int duration = mp.getDuration();
+                    if (currentPos < 2000 && duration > 5000) {
+                        return;
+                    }
+                } catch (Exception e) {
+                    Log.e("MusicManager", "Error checking duration in onCompletion: " + e.getMessage());
+                }
+
                 if (isRepeat && !isShuffle && playlist.size() == 1) {
                     playCurrentIndex(context); // Repeat single song
-                } else if (currentIndex == playlist.size() - 1 && !isRepeat) {
-                    // End of playlist
-                    if (listener != null) listener.onStatusChanged(false);
-                    if (serviceListener != null) serviceListener.onStatusChanged(false);
                 } else {
                     nextSong(context);
                 }

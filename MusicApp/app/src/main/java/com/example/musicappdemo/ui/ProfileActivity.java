@@ -82,6 +82,7 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         loadUserData();
+        loadUserStreak();
 
         binding.btnBack.setOnClickListener(v -> finish());
 
@@ -265,5 +266,36 @@ public class ProfileActivity extends AppCompatActivity {
         binding.btnEditSave.setText("Edit");
         binding.btnEditSave.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_edit, 0);
         binding.actvGender.setEnabled(false);
+    }
+
+    private void loadUserStreak() {
+        String userId = SessionManager.get(this).getUserId();
+        if (userId == null) return;
+
+        RetrofitClient.getApiService().getUserStreak(userId).enqueue(new Callback<SimpleResponse<com.example.musicappdemo.model.UserStreak>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<com.example.musicappdemo.model.UserStreak>> call, Response<SimpleResponse<com.example.musicappdemo.model.UserStreak>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    com.example.musicappdemo.model.UserStreak streak = response.body().getData();
+                    
+                    binding.tvStreakTitle.setText("Current Streak: " + streak.getCurrentStreak() + " day" + (streak.getCurrentStreak() == 1 ? "" : "s"));
+                    
+                    int mins = streak.getTodayListeningTime() / 60;
+                    binding.tvStreakSubtitle.setText("Today: " + mins + "/30 mins listened");
+                    binding.tvMaxStreakVal.setText(streak.getMaxStreak() + " 🔥");
+                    
+                    if (streak.getCurrentStreak() > 0) {
+                        binding.tvStreakEmoji.setText("🔥");
+                    } else {
+                        binding.tvStreakEmoji.setText("❄️");
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<SimpleResponse<com.example.musicappdemo.model.UserStreak>> call, Throwable t) {
+                android.util.Log.e("ProfileActivity", "Error loading streak: " + t.getMessage());
+            }
+        });
     }
 }
