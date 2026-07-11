@@ -147,7 +147,7 @@ public class LibraryFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                currentSearchQuery = s.toString().toLowerCase().trim();
+                currentSearchQuery = removeAccent(s.toString().toLowerCase().trim());
                 filterLibrary();
             }
 
@@ -257,11 +257,12 @@ public class LibraryFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String query = s.toString().toLowerCase().trim();
+                String query = removeAccent(s.toString().toLowerCase().trim());
                 searchResults.clear();
                 if (!query.isEmpty()) {
                     for (Artist artist : allArtists) {
-                        if (artist.getName().toLowerCase().contains(query)) {
+                        String artistName = removeAccent(artist.getName().toLowerCase());
+                        if (artistName.contains(query)) {
                             searchResults.add(artist);
                         }
                     }
@@ -428,7 +429,8 @@ public class LibraryFragment extends Fragment {
         if (currentMode == LibraryMode.PLAYLISTS) {
             List<Playlist> filteredPlaylists = new ArrayList<>();
             for (Playlist p : playlists) {
-                if (p.getName().toLowerCase().contains(currentSearchQuery)) {
+                String playlistName = removeAccent(p.getName().toLowerCase());
+                if (playlistName.contains(currentSearchQuery)) {
                     filteredPlaylists.add(p);
                 }
             }
@@ -440,7 +442,8 @@ public class LibraryFragment extends Fragment {
         } else {
             displayArtists.clear();
             for (Artist a : followedArtists) {
-                if (a.getName().toLowerCase().contains(currentSearchQuery)) {
+                String artistName = removeAccent(a.getName().toLowerCase());
+                if (artistName.contains(currentSearchQuery)) {
                     displayArtists.add(a);
                 }
             }
@@ -517,5 +520,12 @@ public class LibraryFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    private String removeAccent(String s) {
+        if (s == null) return "";
+        String temp = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD);
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(temp).replaceAll("").replace('đ', 'd').replace('Đ', 'D');
     }
 }
