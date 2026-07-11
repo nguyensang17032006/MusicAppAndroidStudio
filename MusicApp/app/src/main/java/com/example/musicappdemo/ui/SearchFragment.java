@@ -212,11 +212,21 @@ public class SearchFragment extends Fragment {
 
         for (Song song : allSongs) {
             String title = song.getTitle() != null ? removeAccent(song.getTitle().toLowerCase()) : "";
-            String artists = (song.getArtists() != null && !song.getArtists().isEmpty()) 
-                    ? removeAccent(song.getArtists().get(0).getName().toLowerCase()) 
-                    : "";
+            
+            boolean matchArtist = false;
+            if (song.getArtists() != null && !song.getArtists().isEmpty()) {
+                for (com.example.musicappdemo.model.Artist artist : song.getArtists()) {
+                    if (artist.getName() != null) {
+                        String artistName = removeAccent(artist.getName().toLowerCase());
+                        if (artistName.contains(lowerQuery)) {
+                            matchArtist = true;
+                            break;
+                        }
+                    }
+                }
+            }
 
-            if (title.contains(lowerQuery) || artists.contains(lowerQuery)) {
+            if (title.contains(lowerQuery) || matchArtist) {
                 filteredSongs.add(song);
                 if (song.getGenres() != null && !song.getGenres().isEmpty()) {
                     for (Genre g : song.getGenres()) {
