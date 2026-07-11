@@ -7,34 +7,31 @@ services:
     container_name: music_app_mysql
     restart: unless-stopped
     environment:
-      # Sửa lại để hỗ trợ user root mặc định của XAMPP
+      # Cấu hình biến môi trường, có fallback values
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-music_password}
       MYSQL_DATABASE: ${DB_NAME:-musicapp}
     ports:
       - "3306:3306"
     volumes:
-      # Ánh xạ thư mục máy chủ vào container để dữ liệu không bị mất khi container tắt
       - mysql_data:/var/lib/mysql
-      # Bỏ comment để tự động nạp dữ liệu:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      # Ánh xạ file SQL từ Backend để khởi tạo dữ liệu
+      - ./MusicAppBackend/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - music_app_network
 
   # Dịch vụ 2: Backend Node.js
   backend:
-    build: .
+    build: ./MusicAppBackend
     container_name: music_app_backend
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      # Sửa lại DB_HOST thành tên service mysql (mysql_db) thay vì localhost
       - DB_HOST=mysql_db
       - DB_USER=${DB_USER:-music_user}
       - DB_PASSWORD=${DB_PASSWORD:-music_password}
       - DB_NAME=${DB_NAME:-musicapp}
       - PORT=3000
-      # Các biến môi trường khác cho Supabase / Cloudinary bạn copy từ file .env vào VPS
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
       - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
@@ -45,11 +42,27 @@ services:
     networks:
       - music_app_network
 
+  # Dịch vụ 3: Web App Admin (Frontend)
+  admin_frontend:
+    build:
+      context: ./MusicAdmin/my-app
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    container_name: music_app_admin
+    restart: unless-stopped
+    ports:
+      # Ánh xạ port 8080 của máy host vào port 80 của Nginx trong container
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - music_app_network
+
 # Định nghĩa Volume lưu dữ liệu MySQL
 volumes:
   mysql_data:
 
-# Định nghĩa mạng nội bộ để Backend và DB nói chuyện với nhau
+# Định nghĩa mạng nội bộ
 networks:
   music_app_network:
     driver: bridge

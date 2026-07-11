@@ -47,7 +47,6 @@ public class FriendFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         setupRecyclerView();
-        loadFriends();
 
         com.example.musicappdemo.data.SocketManager.getInstance().getSocket().on("friend_status_changed", args -> {
             if (args.length > 0) {
@@ -217,6 +216,13 @@ public class FriendFragment extends Fragment {
                 binding.tvEmpty.setVisibility(View.VISIBLE);
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Tự động tải lại danh sách bạn bè mỗi khi màn hình này hiển thị lại
+        loadFriends();
     }
 
     @Override

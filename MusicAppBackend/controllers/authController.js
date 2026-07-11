@@ -323,15 +323,25 @@ const getFriendsList = async (req, res) => {
             .eq('status', 'accepted');
 
         if (error) {
+            console.error("Lỗi getFriendsList từ Supabase:", error.message);
             return res.status(400).json({ success: false, message: error.message });
         }
+
+        console.log(`[getFriendsList] UserID: ${userId}`);
+        console.log(`[getFriendsList] friendships data:`, friendships);
 
         if (!friendships || friendships.length === 0) {
             return res.status(200).json({ success: true, data: [] });
         }
 
         // 2. Lọc ra mảng friend IDs
-        const friendIds = friendships.map(f => f.user_id_1 === userId ? f.user_id_2 : f.user_id_1);
+        const friendIds = friendships.map(f => {
+            const isUser1 = (f.user_id_1 === userId);
+            console.log(`[getFriendsList] So sánh ${f.user_id_1} === ${userId} -> ${isUser1}`);
+            return isUser1 ? f.user_id_2 : f.user_id_1;
+        });
+
+        console.log(`[getFriendsList] friendIds sau khi lọc:`, friendIds);
 
         // 3. Truy vấn MySQL lấy email, avatar và streak
         const placeholders = friendIds.map(() => '?').join(',');
