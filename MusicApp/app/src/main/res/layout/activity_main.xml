@@ -12,108 +12,19 @@
         android:id="@+id/fragment_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/mini_player_container"
+        app:layout_constraintBottom_toTopOf="@+id/miniPlayer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Mini Player -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/mini_player_container"
+    <include
+        android:id="@+id/miniPlayer"
+        layout="@layout/mini_player"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_marginHorizontal="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/bg_mini_player"
-        android:visibility="gone"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/mini_player_img"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/placeholder_img"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:shapeAppearanceOverlay="@style/RoundedCorners8" />
-
-        <LinearLayout
-            android:id="@+id/mini_player_info"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/mini_player_cast"
-            app:layout_constraintStart_toEndOf="@+id/mini_player_img"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <TextView
-                android:id="@+id/mini_player_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Lệ Rơi"
-                android:textColor="@color/white"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/mini_player_artist"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tác giả: Khánh Duy"
-                android:textColor="@color/P80"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <ImageView
-            android:id="@+id/mini_player_cast"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginEnd="16dp"
-            android:src="@drawable/ic_cast"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/mini_player_play"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
-
-        <ImageView
-            android:id="@+id/mini_player_play"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_play"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/mini_player_close"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
-
-        <ImageView
-            android:id="@+id/mini_player_close"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginEnd="12dp"
-            android:src="@drawable/ic_close"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
-
-        <ProgressBar
-            android:id="@+id/mini_player_progress"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:progress="30"
-            android:progressDrawable="@drawable/custom_progress_bar"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

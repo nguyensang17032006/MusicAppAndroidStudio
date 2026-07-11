@@ -37,11 +37,16 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class PlaylistDetailActivity extends AppCompatActivity {
+import android.os.Handler;
+
+public class PlaylistDetailActivity extends AppCompatActivity implements MusicManager.OnMusicStatusListener {
 
     private ActivityPlaylistDetailBinding binding;
     private List<Song> songList = new ArrayList<>();
     private String playlistId;
+    
+    private Handler progressHandler = new Handler();
+    private Runnable progressRunnable;
 
     private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -93,7 +98,86 @@ public class PlaylistDetailActivity extends AppCompatActivity {
             }
         });
 
+        // Mini player events
+        binding.miniPlayer.getRoot().setOnClickListener(v -> {
+            startActivity(new Intent(this, com.example.musicappdemo.PlayerActivity.class));
+        });
+
+        binding.miniPlayer.miniPlayerPlay.setOnClickListener(v -> MusicManager.getInstance().togglePause());
+
+        binding.miniPlayer.miniPlayerClose.setOnClickListener(v -> {
+            MusicManager.getInstance().stopMusic();
+            updateMiniPlayerVisibility();
+        });
+
+        setupProgressUpdate();
         setupRecyclerView();
+    }
+
+    private void setupProgressUpdate() {
+        progressRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (MusicManager.getInstance().isPlaying()) {
+                    int currentPosition = MusicManager.getInstance().getCurrentPosition();
+                    int duration = MusicManager.getInstance().getDuration();
+                    if (duration > 0) {
+                        binding.miniPlayer.miniPlayerProgress.setMax(duration);
+                        binding.miniPlayer.miniPlayerProgress.setProgress(currentPosition);
+                    }
+                }
+                progressHandler.postDelayed(this, 1000);
+            }
+        };
+        progressHandler.post(progressRunnable);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MusicManager.getInstance().setListener(this);
+        Song currentSong = MusicManager.getInstance().getCurrentSong();
+        if (currentSong != null) {
+            onSongChanged(currentSong);
+            onStatusChanged(MusicManager.getInstance().isPlaying());
+        }
+        updateMiniPlayerVisibility();
+    }
+
+    private void updateMiniPlayerVisibility() {
+        if (MusicManager.getInstance().getCurrentSong() != null) {
+            binding.miniPlayer.getRoot().setVisibility(android.view.View.VISIBLE);
+        } else {
+            binding.miniPlayer.getRoot().setVisibility(android.view.View.GONE);
+        }
+    }
+
+    @Override
+    public void onSongChanged(Song song) {
+        updateMiniPlayerVisibility();
+        if (song != null) {
+            String artistName = (song.getArtists() != null && !song.getArtists().isEmpty()) ? song.getArtists().get(0).getName() : "Unknown Artist";
+
+            binding.miniPlayer.miniPlayerTitle.setText(song.getTitle());
+            binding.miniPlayer.miniPlayerArtist.setText(artistName);
+            if (song.getCover_url() != null && !song.getCover_url().isEmpty()) {
+                Glide.with(this).load(RetrofitClient.getFullUrl(song.getCover_url())).into(binding.miniPlayer.miniPlayerImg);
+            } else {
+                binding.miniPlayer.miniPlayerImg.setImageResource(R.drawable.placeholder_img);
+            }
+            binding.miniPlayer.miniPlayerProgress.setProgress(0);
+        }
+    }
+
+    @Override
+    public void onStatusChanged(boolean isPlaying) {
+        binding.miniPlayer.miniPlayerPlay.setImageResource(isPlaying ? R.drawable.ic_pause : R.drawable.ic_play);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        progressHandler.removeCallbacks(progressRunnable);
     }
 
     private void uploadPlaylistCover(Uri uri) {

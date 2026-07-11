@@ -83,7 +83,7 @@ public class PlayerActivity extends AppCompatActivity implements MusicManager.On
             binding.tvSongTitle.setText(song.getTitle());
             binding.tvArtistName.setText(artistName);
             if (song.getCover_url() != null && !song.getCover_url().isEmpty()) {
-                Glide.with(this).load(song.getCover_url()).into(binding.imgArtwork);
+                Glide.with(this).load(com.example.musicappdemo.data.RetrofitClient.getFullUrl(song.getCover_url())).into(binding.imgArtwork);
             } else {
                 binding.imgArtwork.setImageResource(R.drawable.placeholder_img);
             }

@@ -26,7 +26,7 @@ public class RetrofitClient {
 
     public static String getFullUrl(String relativeUrl) {
         if (relativeUrl == null || relativeUrl.isEmpty()) return null;
-        if (relativeUrl.startsWith("http")) return relativeUrl;
+        if (relativeUrl.startsWith("http") || relativeUrl.startsWith("content://") || relativeUrl.startsWith("file://")) return relativeUrl;
         
         String cleanBase = BASE_URL.endsWith("/") ? BASE_URL.substring(0, BASE_URL.length() - 1) : BASE_URL;
         String cleanRelative = relativeUrl.startsWith("/") ? relativeUrl : "/" + relativeUrl;

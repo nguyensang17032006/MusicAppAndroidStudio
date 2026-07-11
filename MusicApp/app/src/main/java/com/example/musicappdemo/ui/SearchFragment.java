@@ -336,6 +336,23 @@ public class SearchFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        loadUserAvatar();
+    }
+
+    private void loadUserAvatar() {
+        if (getContext() == null || binding == null) return;
+        String avatarUri = com.example.musicappdemo.data.SessionManager.get(getContext()).getAvatarUri();
+        if (avatarUri != null && !avatarUri.isEmpty()) {
+            com.bumptech.glide.Glide.with(this)
+                    .load(com.example.musicappdemo.data.RetrofitClient.getFullUrl(avatarUri))
+                    .placeholder(com.example.musicappdemo.R.drawable.ic_user)
+                    .into(binding.btnProfile);
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;

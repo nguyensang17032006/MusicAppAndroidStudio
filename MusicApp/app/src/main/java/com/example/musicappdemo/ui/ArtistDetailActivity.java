@@ -21,13 +21,16 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ArtistDetailActivity extends AppCompatActivity {
+public class ArtistDetailActivity extends AppCompatActivity implements com.example.musicappdemo.utils.MusicManager.OnMusicStatusListener {
 
     private ActivityArtistDetailBinding binding;
     private SearchResultAdapter adapter;
     private List<Song> artistSongs = new ArrayList<>();
     private String artistName;
     private String artistAvatar;
+
+    private android.os.Handler progressHandler = new android.os.Handler();
+    private Runnable progressRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +64,20 @@ public class ArtistDetailActivity extends AppCompatActivity {
                 Toast.makeText(this, "Nghệ sĩ chưa có bài hát nào", Toast.LENGTH_SHORT).show();
             }
         });
+
+        // Mini player events
+        binding.miniPlayer.getRoot().setOnClickListener(v -> {
+            startActivity(new android.content.Intent(this, com.example.musicappdemo.PlayerActivity.class));
+        });
+
+        binding.miniPlayer.miniPlayerPlay.setOnClickListener(v -> com.example.musicappdemo.utils.MusicManager.getInstance().togglePause());
+
+        binding.miniPlayer.miniPlayerClose.setOnClickListener(v -> {
+            com.example.musicappdemo.utils.MusicManager.getInstance().stopMusic();
+            updateMiniPlayerVisibility();
+        });
+
+        setupProgressUpdate();
 
         setupRecyclerView();
         fetchSongs();
@@ -100,5 +117,70 @@ public class ArtistDetailActivity extends AppCompatActivity {
                 Toast.makeText(ArtistDetailActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void setupProgressUpdate() {
+        progressRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (com.example.musicappdemo.utils.MusicManager.getInstance().isPlaying()) {
+                    int currentPosition = com.example.musicappdemo.utils.MusicManager.getInstance().getCurrentPosition();
+                    int duration = com.example.musicappdemo.utils.MusicManager.getInstance().getDuration();
+                    if (duration > 0) {
+                        binding.miniPlayer.miniPlayerProgress.setMax(duration);
+                        binding.miniPlayer.miniPlayerProgress.setProgress(currentPosition);
+                    }
+                }
+                progressHandler.postDelayed(this, 1000);
+            }
+        };
+        progressHandler.post(progressRunnable);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        com.example.musicappdemo.utils.MusicManager.getInstance().setListener(this);
+        Song currentSong = com.example.musicappdemo.utils.MusicManager.getInstance().getCurrentSong();
+        if (currentSong != null) {
+            onSongChanged(currentSong);
+            onStatusChanged(com.example.musicappdemo.utils.MusicManager.getInstance().isPlaying());
+        }
+        updateMiniPlayerVisibility();
+    }
+
+    private void updateMiniPlayerVisibility() {
+        if (com.example.musicappdemo.utils.MusicManager.getInstance().getCurrentSong() != null) {
+            binding.miniPlayer.getRoot().setVisibility(android.view.View.VISIBLE);
+        } else {
+            binding.miniPlayer.getRoot().setVisibility(android.view.View.GONE);
+        }
+    }
+
+    @Override
+    public void onSongChanged(Song song) {
+        updateMiniPlayerVisibility();
+        if (song != null) {
+            String artistText = (song.getArtists() != null && !song.getArtists().isEmpty()) ? song.getArtists().get(0).getName() : "Unknown Artist";
+            binding.miniPlayer.miniPlayerTitle.setText(song.getTitle());
+            binding.miniPlayer.miniPlayerArtist.setText(artistText);
+            if (song.getCover_url() != null && !song.getCover_url().isEmpty()) {
+                com.bumptech.glide.Glide.with(this).load(com.example.musicappdemo.data.RetrofitClient.getFullUrl(song.getCover_url())).into(binding.miniPlayer.miniPlayerImg);
+            } else {
+                binding.miniPlayer.miniPlayerImg.setImageResource(com.example.musicappdemo.R.drawable.placeholder_img);
+            }
+            binding.miniPlayer.miniPlayerProgress.setProgress(0);
+        }
+    }
+
+    @Override
+    public void onStatusChanged(boolean isPlaying) {
+        binding.miniPlayer.miniPlayerPlay.setImageResource(isPlaying ? com.example.musicappdemo.R.drawable.ic_pause : com.example.musicappdemo.R.drawable.ic_play);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        progressHandler.removeCallbacks(progressRunnable);
     }
 }

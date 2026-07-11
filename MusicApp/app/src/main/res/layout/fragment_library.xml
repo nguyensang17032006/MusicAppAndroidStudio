@@ -149,8 +149,7 @@
                     android:layout_width="64dp"
                     android:layout_height="64dp"
                     android:background="@color/S20"
-                    android:padding="16dp"
-                    android:src="@drawable/ic_music_note"
+                    android:src="@drawable/ic_heart"
                     app:shapeAppearanceOverlay="@style/RoundedCorners8" />
 
                 <LinearLayout

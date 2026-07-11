@@ -63,6 +63,20 @@ public class HomeFragment extends Fragment {
             }
             binding.tvGreeting.setText("Chào bạn, " + name + "!");
         }
+
+        String avatarUri = com.example.musicappdemo.data.SessionManager.get(getContext()).getAvatarUri();
+        if (avatarUri != null && !avatarUri.isEmpty()) {
+            com.bumptech.glide.Glide.with(this)
+                    .load(com.example.musicappdemo.data.RetrofitClient.getFullUrl(avatarUri))
+                    .placeholder(com.example.musicappdemo.R.drawable.ic_user)
+                    .into(binding.btnProfile);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateGreeting();
     }
 
     private void setupRecyclerViews() {

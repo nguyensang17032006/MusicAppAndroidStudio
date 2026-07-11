@@ -75,7 +75,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
         }
 
         if (friend.getAvatarUrl() != null && !friend.getAvatarUrl().isEmpty()) {
-            Glide.with(context).load(friend.getAvatarUrl()).placeholder(R.drawable.ic_user).into(holder.ivAvatar);
+            Glide.with(context).load(com.example.musicappdemo.data.RetrofitClient.getFullUrl(friend.getAvatarUrl())).placeholder(R.drawable.ic_user).into(holder.ivAvatar);
         } else {
             holder.ivAvatar.setImageResource(R.drawable.ic_user);
         }

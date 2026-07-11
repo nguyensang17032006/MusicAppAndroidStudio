@@ -188,7 +188,7 @@ public class ProfileActivity extends AppCompatActivity {
         }
         if (avatarUri != null) {
             Glide.with(this)
-                    .load(avatarUri)
+                    .load(RetrofitClient.getFullUrl(avatarUri))
                     .placeholder(R.drawable.ic_user)
                     .into(binding.ivProfileAvatar);
         }
@@ -206,7 +206,7 @@ public class ProfileActivity extends AppCompatActivity {
                         if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
                             SessionManager.get(ProfileActivity.this).saveAvatarUri(user.getAvatarUrl());
                             Glide.with(ProfileActivity.this)
-                                    .load(user.getAvatarUrl())
+                                    .load(RetrofitClient.getFullUrl(user.getAvatarUrl()))
                                     .placeholder(R.drawable.ic_user)
                                     .into(binding.ivProfileAvatar);
                         }
