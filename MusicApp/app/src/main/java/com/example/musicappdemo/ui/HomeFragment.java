@@ -91,6 +91,8 @@ public class HomeFragment extends Fragment {
         RetrofitClient.getApiService().getSongs().enqueue(new Callback<SimpleResponse<List<Song>>>() {
             @Override
             public void onResponse(Call<SimpleResponse<List<Song>>> call, Response<SimpleResponse<List<Song>>> response) {
+                if (binding == null || getContext() == null) return;
+                
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<Song> allSongs = response.body().getData();
 
@@ -123,6 +125,7 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onFailure(Call<SimpleResponse<List<Song>>> call, Throwable t) {
+                if (binding == null || getContext() == null) return;
                 Log.e("HomeFragment", "Lỗi API: " + t.getMessage());
                 Toast.makeText(getContext(), "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
             }

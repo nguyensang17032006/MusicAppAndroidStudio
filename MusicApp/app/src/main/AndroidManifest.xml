@@ -28,8 +28,14 @@
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="musicappdemo.com" android:pathPrefix="/friend" />
             </intent-filter>
         </activity>
         <activity android:name=".PlayerActivity" />
@@ -41,6 +47,7 @@
         <activity android:name=".ui.ForgotPasswordActivity" />
         <activity android:name=".ui.ArtistDetailActivity" />
         <activity android:name=".ui.PlaylistDetailActivity" />
+        <activity android:name=".ui.ChatActivity" />
         <activity
             android:name=".MainActivity"
             android:windowSoftInputMode="adjustPan" />

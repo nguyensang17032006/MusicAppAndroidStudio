@@ -52,6 +52,9 @@ CREATE TABLE songs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+select * from songs;
+
+
 -- Bảng 5: Danh sách phát (ID: P001, P002...)
 CREATE TABLE playlists (
     id VARCHAR(50) PRIMARY KEY, 
@@ -94,6 +97,15 @@ CREATE TABLE interaction_logs (
     is_liked BOOLEAN DEFAULT FALSE, 
     is_skipped BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_streaks (
+    user_id VARCHAR(255) PRIMARY KEY,
+    current_streak INT DEFAULT 0,
+    max_streak INT DEFAULT 0,
+    last_completed_date DATE NULL, -- Ngày gần nhất nghe đủ 30p
+    today_listening_time INT DEFAULT 0, -- Số giây đã nghe trong ngày hôm nay
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Bảng 10: Điểm số sở thích thể loại của User cho mô hình AI

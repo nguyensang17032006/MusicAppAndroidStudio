@@ -50,6 +50,14 @@ public interface ApiService {
     @POST("api/auth/forgot-password/newpassword")
     Call<SimpleResponse> updateNewPassword(@Body NewPasswordRequest request);
 
+    @POST("api/auth/friend/accept-via-link")
+    Call<SimpleResponse<Void>> acceptFriendViaLink(@Body Map<String, String> body);
+
+    @POST("api/auth/friend/remove")
+    Call<SimpleResponse<Void>> removeFriend(@Body Map<String, String> body);
+
+    @GET("api/auth/friend/list/{userId}")
+    Call<SimpleResponse<java.util.List<com.example.musicappdemo.model.Friend>>> getFriendsList(@Path("userId") String userId);
 
     // 3. API đăng nhập truyền thống bằng Email & Mật khẩu
     @POST("api/auth/login")
@@ -89,7 +97,19 @@ public interface ApiService {
     @POST("api/auth/update-profile")
     Call<SimpleResponse<Void>> updateProfile(@Body Map<String, String> body);
 
+    @POST("api/streak/track-time")
+    Call<SimpleResponse<com.example.musicappdemo.model.UserStreak>> trackStreakTime(@Body Map<String, Object> body);
+
+    @GET("api/streak/{userId}")
+    Call<SimpleResponse<com.example.musicappdemo.model.UserStreak>> getUserStreak(@Path("userId") String userId);
+
+    @GET("api/chat/{userId1}/{userId2}")
+    Call<SimpleResponse<java.util.List<com.example.musicappdemo.model.ChatMessage>>> getChatHistory(
+            @Path("userId1") String userId1, 
+            @Path("userId2") String userId2
+    );
+
     @retrofit2.http.Multipart
     @POST("api/upload")
-    Call<Map<String, Object>> uploadFile(@retrofit2.http.Part okhttp3.MultipartBody.Part file);
+    Call<com.example.musicappdemo.model.UploadResponse> uploadFile(@retrofit2.http.Part okhttp3.MultipartBody.Part file);
 }
