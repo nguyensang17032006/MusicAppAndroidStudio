@@ -39,6 +39,32 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('send_message', async (data) => {
+        const { senderId, receiverId, message } = data;
+        if (!senderId || !receiverId || !message) return;
+        
+        try {
+            // Lưu vào Supabase
+            const { data: insertedData, error } = await supabase
+                .from('messages')
+                .insert([
+                    { sender_id: senderId, receiver_id: receiverId, message_text: message }
+                ])
+                .select();
+                
+            if (error) throw error;
+            
+            const newMessage = insertedData[0];
+            
+            // Gửi cho người nhận nếu họ đang online
+            if (connectedUsers[receiverId]) {
+                io.to(connectedUsers[receiverId].socketId).emit('receive_message', newMessage);
+            }
+        } catch (error) {
+            console.error("Lỗi khi lưu tin nhắn vào Supabase:", error);
+        }
+    });
+
     socket.on('disconnect', () => {
         for (const [userId, info] of Object.entries(connectedUsers)) {
             if (info.socketId === socket.id) {
@@ -70,6 +96,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const statsRoutes = require('./routes/statsRoutes');
 const libraryRoutes = require('./routes/libraryRoutes');
 const streakRoutes = require('./routes/streakRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 const { startStreakCron } = require('./utils/streakCron');
 
 // Run table creation check on startup
@@ -88,6 +115,8 @@ db.query(`
     console.error("Error creating table 'user_streaks':", err.message);
 });
 
+
+
 // Start streak cron job
 startStreakCron();
 
@@ -100,6 +129,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/streak', streakRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.use((err, req, res, next) => {
     if (err) {

@@ -53,15 +53,7 @@
         app:layout_constraintBottom_toTopOf="@+id/chat_input_container"
         app:layout_constraintTop_toBottomOf="@+id/chat_header" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Tính năng chat đang được phát triển..."
-        android:textColor="@color/P40"
-        app:layout_constraintBottom_toBottomOf="@+id/rv_chat"
-        app:layout_constraintEnd_toEndOf="@+id/rv_chat"
-        app:layout_constraintStart_toStartOf="@+id/rv_chat"
-        app:layout_constraintTop_toTopOf="@+id/rv_chat" />
+
 
     <!-- Chat Input (Placeholder) -->
     <LinearLayout

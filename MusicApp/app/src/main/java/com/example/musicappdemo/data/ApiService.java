@@ -96,4 +96,10 @@ public interface ApiService {
 
     @GET("api/streak/{userId}")
     Call<SimpleResponse<com.example.musicappdemo.model.UserStreak>> getUserStreak(@Path("userId") String userId);
+
+    @GET("api/chat/{userId1}/{userId2}")
+    Call<SimpleResponse<java.util.List<com.example.musicappdemo.model.ChatMessage>>> getChatHistory(
+            @Path("userId1") String userId1, 
+            @Path("userId2") String userId2
+    );
 }
