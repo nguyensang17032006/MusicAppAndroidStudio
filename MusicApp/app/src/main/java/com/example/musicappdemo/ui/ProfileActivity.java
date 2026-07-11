@@ -227,7 +227,6 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void saveProfileChanges() {
-        String userId = SessionManager.get(this).getUserId();
         String gender = binding.actvGender.getText().toString();
         
         // Ưu tiên dùng uri mới chọn, nếu không có thì lấy từ SessionManager
@@ -236,11 +235,70 @@ public class ProfileActivity extends AppCompatActivity {
             avatarToSend = SessionManager.get(this).getAvatarUri();
         }
 
+        // Nếu avatar là link local từ điện thoại, tiến hành upload lên Cloudinary trước
+        if (avatarToSend != null && (avatarToSend.startsWith("content://") || avatarToSend.startsWith("file://"))) {
+            uploadAndSaveProfile(avatarToSend, gender);
+        } else {
+            sendUpdateProfileRequest(gender, avatarToSend);
+        }
+    }
+
+    private void uploadAndSaveProfile(String localUriStr, String gender) {
+        Toast.makeText(this, "Đang tải ảnh lên máy chủ...", Toast.LENGTH_SHORT).show();
+        try {
+            Uri uri = Uri.parse(localUriStr);
+            java.io.InputStream is = getContentResolver().openInputStream(uri);
+            if (is == null) {
+                Toast.makeText(this, "Không thể đọc ảnh", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            byte[] bytes = new byte[is.available()];
+            is.read(bytes);
+            is.close();
+
+            String mimeType = getContentResolver().getType(uri);
+            if (mimeType == null) {
+                mimeType = "image/jpeg"; // Mặc định là jpeg nếu không lấy được
+            }
+
+            okhttp3.RequestBody requestFile = okhttp3.RequestBody.create(okhttp3.MediaType.parse(mimeType), bytes);
+            okhttp3.MultipartBody.Part body = okhttp3.MultipartBody.Part.createFormData("file", "avatar.jpg", requestFile);
+
+            RetrofitClient.getApiService().uploadFile(body).enqueue(new Callback<com.example.musicappdemo.model.UploadResponse>() {
+                @Override
+                public void onResponse(Call<com.example.musicappdemo.model.UploadResponse> call, Response<com.example.musicappdemo.model.UploadResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        String cloudinaryUrl = response.body().getFileUrl();
+                        SessionManager.get(ProfileActivity.this).saveAvatarUri(cloudinaryUrl);
+                        sendUpdateProfileRequest(gender, cloudinaryUrl);
+                    } else {
+                        String errorMsg = "Lỗi khi upload ảnh!";
+                        try {
+                            if (response.errorBody() != null) {
+                                errorMsg += " " + response.errorBody().string();
+                            }
+                        } catch (Exception e) {}
+                        Toast.makeText(ProfileActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<com.example.musicappdemo.model.UploadResponse> call, Throwable t) {
+                    Toast.makeText(ProfileActivity.this, "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Lỗi không xác định khi upload", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void sendUpdateProfileRequest(String gender, String avatarUrl) {
+        String userId = SessionManager.get(this).getUserId();
         Map<String, String> body = new HashMap<>();
         body.put("userId", userId);
         body.put("gender", gender);
-        if (avatarToSend != null) {
-            body.put("avatar_url", avatarToSend);
+        if (avatarUrl != null) {
+            body.put("avatar_url", avatarUrl);
         }
 
         RetrofitClient.getApiService().updateProfile(body).enqueue(new Callback<SimpleResponse<Void>>() {

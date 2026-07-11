@@ -37,6 +37,9 @@ services:
       # Các biến môi trường khác cho Supabase / Cloudinary bạn copy từ file .env vào VPS
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
     depends_on:
       - mysql_db
     networks:

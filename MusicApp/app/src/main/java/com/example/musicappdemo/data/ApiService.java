@@ -102,4 +102,8 @@ public interface ApiService {
             @Path("userId1") String userId1, 
             @Path("userId2") String userId2
     );
+
+    @retrofit2.http.Multipart
+    @POST("api/upload")
+    Call<com.example.musicappdemo.model.UploadResponse> uploadFile(@retrofit2.http.Part okhttp3.MultipartBody.Part file);
 }
