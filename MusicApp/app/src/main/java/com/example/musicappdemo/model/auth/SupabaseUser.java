@@ -17,6 +17,8 @@ public class SupabaseUser {
     private String lastSignInAt;
     @SerializedName("created_at")
     private String createdAt;
+    @SerializedName("friend_code")
+    private String friendCode;
 
     public SupabaseUser() {
     }
@@ -84,5 +86,13 @@ public class SupabaseUser {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getFriendCode() {
+        return friendCode;
+    }
+
+    public void setFriendCode(String friendCode) {
+        this.friendCode = friendCode;
     }
 }

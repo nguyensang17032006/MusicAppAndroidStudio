@@ -32,6 +32,8 @@ import retrofit2.Response;
 
 public class ChatActivity extends AppCompatActivity {
 
+    public static String currentChatFriendId = null;
+
     private String friendId;
     private String friendName;
     private String myUserId;
@@ -54,6 +56,9 @@ public class ChatActivity extends AppCompatActivity {
         TextView tvChatName = findViewById(R.id.tv_chat_name);
         if (friendName != null) {
             tvChatName.setText(friendName);
+        } else {
+            // Nếu mở từ Notification, friendName sẽ null -> cần gọi API lấy tên
+            fetchFriendName();
         }
 
         rvChat = findViewById(R.id.rv_chat);
@@ -159,10 +164,39 @@ public class ChatActivity extends AppCompatActivity {
     };
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        currentChatFriendId = friendId;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        currentChatFriendId = null;
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mSocket != null) {
             mSocket.off("receive_message", onNewMessage);
         }
+    }
+
+    private void fetchFriendName() {
+        if (friendId == null) return;
+        ApiService apiService = RetrofitClient.getApiService();
+        apiService.getUserProfile(friendId).enqueue(new Callback<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>> call, Response<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    friendName = response.body().getData().getEmail().split("@")[0];
+                    TextView tvChatName = findViewById(R.id.tv_chat_name);
+                    tvChatName.setText(friendName);
+                }
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>> call, Throwable t) {}
+        });
     }
 }

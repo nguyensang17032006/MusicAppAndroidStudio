@@ -6,10 +6,12 @@ import java.net.URISyntaxException;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 
 public class SocketManager {
     private static SocketManager instance;
     private Socket mSocket;
+    private android.content.Context mContext;
     private static final String SERVER_URL = "http://45.32.105.30:3000"; // Dùng IP VPS chung cho cả máy thật và máy ảo
 
     private SocketManager() {
@@ -30,6 +32,32 @@ public class SocketManager {
     public Socket getSocket() {
         return mSocket;
     }
+
+    public void init(android.content.Context context) {
+        this.mContext = context.getApplicationContext();
+        if (mSocket != null) {
+            // Lắng nghe tin nhắn mới ở mọi nơi trong App
+            mSocket.off("receive_message", globalMessageListener);
+            mSocket.on("receive_message", globalMessageListener);
+        }
+    }
+
+    private Emitter.Listener globalMessageListener = args -> {
+        try {
+            org.json.JSONObject data = (org.json.JSONObject) args[0];
+            String senderId = data.getString("sender_id");
+            String messageText = data.getString("message_text");
+            
+            // Đừng hiện thông báo nếu đang chat trực tiếp với người đó
+            if (senderId.equals(com.example.musicappdemo.ui.ChatActivity.currentChatFriendId)) {
+                return;
+            }
+            
+            if (mContext != null) {
+                com.example.musicappdemo.utils.NotificationUtils.showChatNotification(mContext, senderId, messageText);
+            }
+        } catch (Exception e) {}
+    };
 
     public void connect(String userId) {
         if (!mSocket.connected()) {

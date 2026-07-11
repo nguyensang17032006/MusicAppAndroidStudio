@@ -55,10 +55,12 @@ const verifyAndRegister = async (req, res) => {
         console.log("✅ Xác thực OTP trên Supabase thành công! Chuẩn bị lưu vào MySQL...");
 
         // BƯỚC B: Lưu thông tin vào MySQL (Chỉ chạy 1 lần duy nhất)
-        const sql = `INSERT INTO users (id, email, gender) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE email=email`;
+        // Sinh mã kết bạn ngẫu nhiên 6 ký tự
+        const friendCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const sql = `INSERT INTO users (id, email, gender, friend_code) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE email=email`;
 
         try {
-            await db.query(sql, [supabaseUser.id, email, gender || null]);
+            await db.query(sql, [supabaseUser.id, email, gender || null, friendCode]);
             console.log("🚀 Đã lưu thông tin vào MySQL thành công!");
         } catch (dbErr) {
             console.error("❌ Lỗi thực thi MySQL:", dbErr.message);
@@ -109,9 +111,10 @@ const login = async (req, res) => {
 
         // ĐẢM BẢO USER TỒN TẠI TRONG MYSQL (UPSERT)
         // Nếu chưa có thì chèn mới, nếu có rồi thì giữ nguyên (hoặc cập nhật email)
-        const sql = `INSERT INTO users (id, email) VALUES (?, ?) ON DUPLICATE KEY UPDATE email=email`;
+        const friendCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const sql = `INSERT INTO users (id, email, friend_code) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE email=email`;
         try {
-            await db.query(sql, [supabaseUser.id, supabaseUser.email]);
+            await db.query(sql, [supabaseUser.id, supabaseUser.email, friendCode]);
         } catch (dbErr) {
             console.error("Lỗi cập nhật User vào MySQL khi login:", dbErr.message);
         }
@@ -142,11 +145,12 @@ const login = async (req, res) => {
 const getUserProfile = async (req, res) => {
     const { userId } = req.params;
     try {
-        const [rows] = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
+        // Tìm kiếm bằng ID thật (hiển thị profile của mình) HOẶC mã friend_code (tìm bạn bè)
+        const [rows] = await db.query('SELECT * FROM users WHERE id = ? OR friend_code = ?', [userId, userId]);
         if (rows.length > 0) {
             res.status(200).json({ success: true, data: rows[0] });
         } else {
-            res.status(404).json({ success: false, message: 'User not found' });
+            res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
         }
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

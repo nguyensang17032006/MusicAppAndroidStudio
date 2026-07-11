@@ -33,6 +33,7 @@ public class FriendFragment extends Fragment {
 
     private FragmentFriendBinding binding;
     private FriendsAdapter friendsAdapter;
+    private String myFriendCode = null;
 
     @Nullable
     @Override
@@ -68,17 +69,19 @@ public class FriendFragment extends Fragment {
                 }
             }
         });
+        
+        // Tải mã friend_code của bản thân
+        loadMyProfile();
 
         binding.btnCopyLink.setOnClickListener(v -> {
-            String userId = SessionManager.get(requireContext()).getUserId();
-            if (userId != null && !userId.isEmpty()) {
+            if (myFriendCode != null && !myFriendCode.isEmpty()) {
                 ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Friend ID", userId);
+                ClipData clip = ClipData.newPlainText("Friend ID", myFriendCode);
                 clipboard.setPrimaryClip(clip);
                 
-                Toast.makeText(requireContext(), "Đã sao chép ID của bạn!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Đã sao chép mã (" + myFriendCode + ")", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(requireContext(), "Lỗi: Không tìm thấy ID người dùng.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Lỗi: Đang tải mã, vui lòng thử lại sau.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -97,13 +100,14 @@ public class FriendFragment extends Fragment {
                 public void onResponse(Call<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>> call, Response<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                         String email = response.body().getData().getEmail();
+                        String fullFriendId = response.body().getData().getId(); // Lấy ID đầy đủ từ API
                         
                         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                             .setTitle("Tìm thấy bạn bè")
                             .setMessage("Bạn có muốn kết bạn với người dùng: " + email + "?")
                             .setPositiveButton("Kết bạn", (dialog, which) -> {
                                 java.util.Map<String, String> body = new java.util.HashMap<>();
-                                body.put("inviterId", friendId);
+                                body.put("inviterId", fullFriendId); // Gửi ID đầy đủ lên server thay vì ID ngắn
                                 body.put("receiverId", myUserId);
 
                                 RetrofitClient.getApiService().acceptFriendViaLink(body).enqueue(new Callback<SimpleResponse<Void>>() {
@@ -153,6 +157,28 @@ public class FriendFragment extends Fragment {
         friendsAdapter = new FriendsAdapter(requireContext(), new ArrayList<>());
         binding.rvFriends.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvFriends.setAdapter(friendsAdapter);
+    }
+    
+    private void loadMyProfile() {
+        String myUserId = SessionManager.get(requireContext()).getUserId();
+        if (myUserId == null || myUserId.isEmpty()) return;
+        
+        RetrofitClient.getApiService().getUserProfile(myUserId).enqueue(new Callback<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>> call, Response<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    myFriendCode = response.body().getData().getFriendCode();
+                    if (myFriendCode == null) {
+                        myFriendCode = myUserId.length() > 8 ? myUserId.substring(0, 8) : myUserId;
+                    }
+                    if (binding != null) {
+                        binding.tvMyCode.setText("Mã của bạn: " + myFriendCode);
+                    }
+                }
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>> call, Throwable t) {}
+        });
     }
 
     private void loadFriends() {
