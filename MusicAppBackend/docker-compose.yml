@@ -7,10 +7,9 @@ services:
     container_name: music_app_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+      # Sửa lại để hỗ trợ user root mặc định của XAMPP
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-music_password}
       MYSQL_DATABASE: ${DB_NAME:-musicapp}
-      MYSQL_USER: ${DB_USER:-music_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-music_password}
     ports:
       - "3306:3306"
     volumes:
