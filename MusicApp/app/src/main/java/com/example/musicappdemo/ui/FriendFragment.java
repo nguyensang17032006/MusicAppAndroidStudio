@@ -93,7 +93,17 @@ public class FriendFragment extends Fragment {
                                             binding.etFriendId.setText("");
                                             loadFriends();
                                         } else {
-                                            Toast.makeText(requireContext(), "Lỗi: ID không hợp lệ hoặc đã là bạn bè.", Toast.LENGTH_SHORT).show();
+                                            String errorMsg = "ID không hợp lệ hoặc đã là bạn bè";
+                                            try {
+                                                if (response2.errorBody() != null) {
+                                                    String errStr = response2.errorBody().string();
+                                                    org.json.JSONObject jObjError = new org.json.JSONObject(errStr);
+                                                    if (jObjError.has("message")) {
+                                                        errorMsg = jObjError.getString("message");
+                                                    }
+                                                }
+                                            } catch (Exception e) {}
+                                            Toast.makeText(requireContext(), "Lỗi: " + errorMsg, Toast.LENGTH_LONG).show();
                                         }
                                     }
 

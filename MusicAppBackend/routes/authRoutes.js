@@ -20,6 +20,8 @@ router.post('/forgot-password/newpassword', authController.updateNewPassword);
 
 router.post('/friend/accept-via-link', authController.acceptFriendViaLink);
 
+router.post('/friend/remove', authController.removeFriend);
+
 router.get('/friend/list/:userId', authController.getFriendsList);
 
 module.exports = router;

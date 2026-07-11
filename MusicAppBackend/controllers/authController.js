@@ -346,6 +346,28 @@ const getFriendsList = async (req, res) => {
     }
 };
 
+const removeFriend = async (req, res) => {
+    const { userId1, userId2 } = req.body;
+    try {
+        const id1 = userId1 < userId2 ? userId1 : userId2;
+        const id2 = userId1 > userId2 ? userId1 : userId2;
+
+        const { error } = await supabase
+            .from('friendships')
+            .delete()
+            .eq('user_id_1', id1)
+            .eq('user_id_2', id2);
+
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+
+        return res.status(200).json({ success: true, message: "Đã xóa bạn bè" });
+    } catch (err) {
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 module.exports = {
     sendOtpEmail,
     verifyAndRegister,
@@ -356,5 +378,6 @@ module.exports = {
     verifyOtpForgotPassword,
     updateNewPassword,
     acceptFriendViaLink,
-    getFriendsList
+    getFriendsList,
+    removeFriend
 };

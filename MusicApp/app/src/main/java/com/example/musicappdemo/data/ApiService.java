@@ -50,6 +50,9 @@ public interface ApiService {
     @POST("api/auth/friend/accept-via-link")
     Call<SimpleResponse<Void>> acceptFriendViaLink(@Body Map<String, String> body);
 
+    @POST("api/auth/friend/remove")
+    Call<SimpleResponse<Void>> removeFriend(@Body Map<String, String> body);
+
     @GET("api/auth/friend/list/{userId}")
     Call<SimpleResponse<java.util.List<com.example.musicappdemo.model.Friend>>> getFriendsList(@Path("userId") String userId);
 

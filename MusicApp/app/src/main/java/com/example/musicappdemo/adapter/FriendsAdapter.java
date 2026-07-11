@@ -60,6 +60,40 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
             intent.putExtra("FRIEND_NAME", friend.getEmail());
             context.startActivity(intent);
         });
+
+        holder.btnDelete.setOnClickListener(v -> {
+            new androidx.appcompat.app.AlertDialog.Builder(context)
+                .setTitle("Xóa bạn bè")
+                .setMessage("Bạn có chắc chắn muốn xóa " + friend.getEmail() + " khỏi danh sách bạn bè?")
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    String myUserId = com.example.musicappdemo.data.SessionManager.get(context).getUserId();
+                    if (myUserId == null) return;
+                    
+                    java.util.Map<String, String> body = new java.util.HashMap<>();
+                    body.put("userId1", myUserId);
+                    body.put("userId2", friend.getId());
+                    
+                    com.example.musicappdemo.data.RetrofitClient.getApiService().removeFriend(body).enqueue(new retrofit2.Callback<com.example.musicappdemo.data.SimpleResponse<Void>>() {
+                        @Override
+                        public void onResponse(retrofit2.Call<com.example.musicappdemo.data.SimpleResponse<Void>> call, retrofit2.Response<com.example.musicappdemo.data.SimpleResponse<Void>> response) {
+                            if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                                android.widget.Toast.makeText(context, "Đã xóa bạn bè", android.widget.Toast.LENGTH_SHORT).show();
+                                friends.remove(holder.getAdapterPosition());
+                                notifyItemRemoved(holder.getAdapterPosition());
+                            } else {
+                                android.widget.Toast.makeText(context, "Lỗi khi xóa bạn bè", android.widget.Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        
+                        @Override
+                        public void onFailure(retrofit2.Call<com.example.musicappdemo.data.SimpleResponse<Void>> call, Throwable t) {
+                            android.widget.Toast.makeText(context, "Lỗi mạng: " + t.getMessage(), android.widget.Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+        });
     }
 
     @Override
@@ -72,6 +106,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
         TextView tvName;
         TextView tvStatus;
         TextView tvStreak;
+        ImageView btnDelete;
 
         public FriendViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -79,6 +114,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
             tvName = itemView.findViewById(R.id.tv_friend_name);
             tvStatus = itemView.findViewById(R.id.tv_friend_status);
             tvStreak = itemView.findViewById(R.id.tv_friend_streak);
+            btnDelete = itemView.findViewById(R.id.btn_delete_friend);
         }
     }
 }
