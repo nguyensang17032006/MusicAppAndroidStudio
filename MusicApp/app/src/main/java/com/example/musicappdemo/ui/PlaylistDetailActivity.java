@@ -104,12 +104,12 @@ public class PlaylistDetailActivity extends AppCompatActivity {
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
             MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
 
-            RetrofitClient.getApiService().uploadFile(body).enqueue(new Callback<Map<String, Object>>() {
+            RetrofitClient.getApiService().uploadFile(body).enqueue(new Callback<com.example.musicappdemo.model.UploadResponse>() {
                 @Override
-                public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                public void onResponse(Call<com.example.musicappdemo.model.UploadResponse> call, Response<com.example.musicappdemo.model.UploadResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
-                        Log.d("PlaylistDetail", "Upload Success: " + response.body());
-                        String uploadedUrl = (String) response.body().get("file_url");
+                        Log.d("PlaylistDetail", "Upload Success: " + response.body().getFileUrl());
+                        String uploadedUrl = response.body().getFileUrl();
                         updatePlaylistCoverOnServer(uploadedUrl);
                     } else {
                         try {
@@ -123,7 +123,7 @@ public class PlaylistDetailActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                public void onFailure(Call<com.example.musicappdemo.model.UploadResponse> call, Throwable t) {
                     Log.e("PlaylistDetail", "Upload Network Error", t);
                     Toast.makeText(PlaylistDetailActivity.this, "Lỗi kết nối upload: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }

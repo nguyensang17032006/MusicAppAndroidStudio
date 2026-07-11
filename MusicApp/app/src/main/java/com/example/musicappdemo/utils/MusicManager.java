@@ -171,6 +171,7 @@ public class MusicManager {
                 // Tăng view khi nghe hết bài
                 if (currentSong != null) {
                     incrementSongView(currentSong.getId());
+                }
                 try {
                     int currentPos = mp.getCurrentPosition();
                     int duration = mp.getDuration();

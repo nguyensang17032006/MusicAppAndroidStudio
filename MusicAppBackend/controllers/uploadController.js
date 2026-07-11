@@ -9,7 +9,14 @@ const uploadFile = async (req, res) => {
 
         // Tạo tên file duy nhất để tránh trùng lặp
         const fileName = Date.now() + path.extname(req.file.originalname);
-        const uploadPath = path.join(__dirname, '../uploads/', fileName);
+        const uploadsDir = path.join(__dirname, '../uploads');
+        
+        // Kiểm tra và tạo thư mục uploads nếu chưa có
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+
+        const uploadPath = path.join(uploadsDir, fileName);
 
         // Lưu file từ Buffer (multer memoryStorage) vào thư mục uploads
         fs.writeFileSync(uploadPath, req.file.buffer);
