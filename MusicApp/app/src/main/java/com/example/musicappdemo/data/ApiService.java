@@ -47,6 +47,11 @@ public interface ApiService {
     @POST("api/auth/forgot-password/newpassword")
     Call<SimpleResponse> updateNewPassword(@Body NewPasswordRequest request);
 
+    @POST("api/auth/friend/accept-via-link")
+    Call<SimpleResponse<Void>> acceptFriendViaLink(@Body Map<String, String> body);
+
+    @GET("api/auth/friend/list/{userId}")
+    Call<SimpleResponse<java.util.List<com.example.musicappdemo.model.Friend>>> getFriendsList(@Path("userId") String userId);
 
     // 3. API đăng nhập truyền thống bằng Email & Mật khẩu
     @POST("api/auth/login")

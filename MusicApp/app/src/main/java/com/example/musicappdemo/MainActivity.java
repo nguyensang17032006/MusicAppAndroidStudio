@@ -14,6 +14,18 @@ import com.example.musicappdemo.ui.HomeFragment;
 import com.example.musicappdemo.ui.LibraryFragment;
 import com.example.musicappdemo.ui.SearchFragment;
 import com.example.musicappdemo.utils.MusicManager;
+import com.example.musicappdemo.data.SessionManager;
+import com.example.musicappdemo.data.RetrofitClient;
+import com.example.musicappdemo.data.SimpleResponse;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import androidx.appcompat.app.AlertDialog;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements MusicManager.OnMusicStatusListener {
 
@@ -50,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
                 selectedFragment = new SearchFragment();
             } else if (id == R.id.nav_library) {
                 selectedFragment = new LibraryFragment();
+            } else if (id == R.id.nav_friends) {
+                selectedFragment = new com.example.musicappdemo.ui.FriendFragment();
             } else {
                 return false;
             }
@@ -73,6 +87,60 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
         });
 
         setupProgressUpdate();
+        
+        handleDeepLinkIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleDeepLinkIntent(intent);
+    }
+
+    private void handleDeepLinkIntent(Intent intent) {
+        if (intent != null && intent.hasExtra("inviterId")) {
+            String inviterId = intent.getStringExtra("inviterId");
+            if (inviterId != null && !inviterId.isEmpty()) {
+                showAcceptFriendDialog(inviterId);
+            }
+        }
+    }
+
+    private void showAcceptFriendDialog(String inviterId) {
+        new AlertDialog.Builder(this)
+                .setTitle("Kết bạn mới")
+                .setMessage("Bạn có muốn kết bạn qua liên kết này không?")
+                .setPositiveButton("Đồng ý", (dialog, which) -> acceptFriend(inviterId))
+                .setNegativeButton("Hủy bỏ", null)
+                .show();
+    }
+
+    private void acceptFriend(String inviterId) {
+        String currentUserId = SessionManager.get(this).getUserId();
+        if (currentUserId == null || currentUserId.isEmpty()) {
+            Toast.makeText(this, "Vui lòng đăng nhập để kết bạn", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Map<String, String> body = new HashMap<>();
+        body.put("inviterId", inviterId);
+        body.put("receiverId", currentUserId);
+
+        RetrofitClient.getApiService().acceptFriendViaLink(body).enqueue(new Callback<SimpleResponse<Void>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(MainActivity.this, "Đã kết bạn thành công!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Lỗi kết bạn!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setupProgressUpdate() {

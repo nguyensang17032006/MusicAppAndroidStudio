@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # Dịch vụ 1: Database MySQL
+  mysql_db:
+    image: mysql:8.0
+    container_name: music_app_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${DB_NAME:-musicapp}
+      MYSQL_USER: ${DB_USER:-music_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-music_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      # Ánh xạ thư mục máy chủ vào container để dữ liệu không bị mất khi container tắt
+      - mysql_data:/var/lib/mysql
+      # Nếu bạn có file init.sql (tạo bảng ban đầu), hãy bỏ comment 2 dòng dưới và bỏ file init.sql vào thư mục gốc
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - music_app_network
+
+  # Dịch vụ 2: Backend Node.js
+  backend:
+    build: .
+    container_name: music_app_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Sửa lại DB_HOST thành tên service mysql (mysql_db) thay vì localhost
+      - DB_HOST=mysql_db
+      - DB_USER=${DB_USER:-music_user}
+      - DB_PASSWORD=${DB_PASSWORD:-music_password}
+      - DB_NAME=${DB_NAME:-musicapp}
+      - PORT=3000
+      # Các biến môi trường khác cho Supabase / Cloudinary bạn copy từ file .env vào VPS
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+    depends_on:
+      - mysql_db
+    networks:
+      - music_app_network
+
+# Định nghĩa Volume lưu dữ liệu MySQL
+volumes:
+  mysql_data:
+
+# Định nghĩa mạng nội bộ để Backend và DB nói chuyện với nhau
+networks:
+  music_app_network:
+    driver: bridge

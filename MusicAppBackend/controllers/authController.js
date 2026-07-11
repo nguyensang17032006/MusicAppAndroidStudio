@@ -261,6 +261,76 @@ const updateNewPassword = async (req, res) => {
         return res.status(500).json({ success: false, message: err.message });
     }
 };
+
+const acceptFriendViaLink = async (req, res) => {
+    const { inviterId, receiverId } = req.body;
+
+    if (inviterId === receiverId) {
+        return res.status(400).json({ success: false, message: "Bạn không thể tự kết bạn với chính mình!" });
+    }
+
+    try {
+        const id1 = inviterId < receiverId ? inviterId : receiverId;
+        const id2 = inviterId > receiverId ? inviterId : receiverId;
+
+        const { data, error } = await supabase
+            .from('friendships')
+            .upsert({
+                user_id_1: id1,
+                user_id_2: id2,
+                status: 'accepted'
+            }, { onConflict: 'user_id_1, user_id_2' })
+            .select();
+
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+
+        return res.status(200).json({ success: true, message: "Đã kết bạn thành công qua liên kết!" });
+    } catch (err) {
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+const getFriendsList = async (req, res) => {
+    const { userId } = req.params;
+    
+    try {
+        // 1. Lấy danh sách ID bạn bè từ Supabase
+        const { data: friendships, error } = await supabase
+            .from('friendships')
+            .select('*')
+            .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`)
+            .eq('status', 'accepted');
+            
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+        
+        if (!friendships || friendships.length === 0) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+        
+        // 2. Lọc ra mảng friend IDs
+        const friendIds = friendships.map(f => f.user_id_1 === userId ? f.user_id_2 : f.user_id_1);
+        
+        // 3. Truy vấn MySQL lấy email, avatar và streak
+        const placeholders = friendIds.map(() => '?').join(',');
+        const query = `
+            SELECT u.id, u.email, u.avatar_url, COALESCE(s.current_streak, 0) as streak
+            FROM users u
+            LEFT JOIN user_streaks s ON u.id = s.user_id
+            WHERE u.id IN (${placeholders})
+        `;
+        
+        const [rows] = await db.query(query, friendIds);
+        
+        return res.status(200).json({ success: true, data: rows });
+    } catch (err) {
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 module.exports = {
     sendOtpEmail,
     verifyAndRegister,
@@ -269,5 +339,7 @@ module.exports = {
     updateProfile,
     sendOtpForgotPassword,
     verifyOtpForgotPassword,
-    updateNewPassword
+    updateNewPassword,
+    acceptFriendViaLink,
+    getFriendsList
 };
