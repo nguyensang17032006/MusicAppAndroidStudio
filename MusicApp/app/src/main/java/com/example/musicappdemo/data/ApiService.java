@@ -22,6 +22,9 @@ public interface ApiService {
     @GET("api/songs")
     Call<SimpleResponse<List<Song>>> getSongs();
 
+    @POST("api/songs/{id}/view")
+    Call<SimpleResponse<Void>> incrementView(@Path("id") String songId);
+
     @GET("api/genres")
     Call<SimpleResponse<List<Genre>>> getGenres();
 
@@ -71,6 +74,9 @@ public interface ApiService {
     @POST("api/library/playlists/delete")
     Call<SimpleResponse<Void>> deletePlaylist(@Body java.util.Map<String, String> body);
 
+    @POST("api/library/playlists/update-cover")
+    Call<SimpleResponse<Void>> updatePlaylistCover(@Body java.util.Map<String, String> body);
+
     @GET("api/library/followed-artists/{userId}")
     Call<SimpleResponse<List<Artist>>> getFollowedArtists(@Path("userId") String userId);
 
@@ -82,4 +88,8 @@ public interface ApiService {
 
     @POST("api/auth/update-profile")
     Call<SimpleResponse<Void>> updateProfile(@Body Map<String, String> body);
+
+    @retrofit2.http.Multipart
+    @POST("api/upload")
+    Call<Map<String, Object>> uploadFile(@retrofit2.http.Part okhttp3.MultipartBody.Part file);
 }

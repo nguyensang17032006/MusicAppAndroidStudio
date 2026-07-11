@@ -11,6 +11,7 @@ router.get('/playlists/:userId', libraryController.getUserPlaylists);
 router.post('/playlists/create', libraryController.createPlaylist);
 router.post('/playlists/add-song', libraryController.addSongToPlaylist);
 router.post('/playlists/delete', libraryController.deletePlaylist);
+router.post('/playlists/update-cover', libraryController.updatePlaylistCover);
 
 // Followed Artists
 router.get('/followed-artists/:userId', libraryController.getFollowedArtists);

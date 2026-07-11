@@ -1,38 +1,32 @@
-const { cloudinary } = require('../config/cloudinary');
+const path = require('path');
+const fs = require('fs');
 
 const uploadFile = async (req, res) => {
     try {
-        // Kiểm tra xem Android đã gửi file lên chưa (key trong form-data phải đặt tên là 'file')
         if (!req.file) {
             return res.status(400).json({ success: false, message: "Vui lòng chọn file để upload!" });
         }
 
-        // Tự động phân loại folder trên Cloudinary dựa trên kiểu định dạng file (mimetype)
-        const isAudio = req.file.mimetype.startsWith('audio/');
-        const folderName = isAudio ? 'music_app/tracks' : 'music_app/covers';
+        // Tạo tên file duy nhất để tránh trùng lặp
+        const fileName = Date.now() + path.extname(req.file.originalname);
+        const uploadPath = path.join(__dirname, '../uploads/', fileName);
 
-        // Cloudinary quản lý file âm thanh/video trong nhóm 'video', file ảnh trong nhóm 'image'
-        const resourceType = isAudio ? 'video' : 'image';
+        // Lưu file từ Buffer (multer memoryStorage) vào thư mục uploads
+        fs.writeFileSync(uploadPath, req.file.buffer);
 
-        // Chuyển đổi file binary từ bộ nhớ đệm (Buffer) sang chuỗi chuỗi Base64 để gửi lên Cloudinary
-        const fileBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+        // Trả về đường dẫn tương đối để lưu vào MySQL
+        const fileUrl = `/uploads/${fileName}`;
 
-        // Tiến hành upload file thẳng lên Cloudinary
-        const result = await cloudinary.uploader.upload(fileBase64, {
-            folder: folderName,
-            resource_type: resourceType
-        });
+        console.log("File saved to:", uploadPath);
 
-        // Trả về dữ liệu URL sạch cho Android Studio
         return res.status(200).json({
             success: true,
-            message: "Upload file lên Cloudinary thành công!",
-            file_url: result.secure_url, // Đường link https để bạn lưu vào MySQL sau này
-            public_id: result.public_id, // Mã định danh file (dùng khi muốn xóa file)
-            duration: result.duration ? Math.round(result.duration) : 0 // Trả về số giây (nếu là file nhạc)
+            message: "Upload file thành công!",
+            file_url: fileUrl
         });
 
     } catch (error) {
+        console.error("Upload Error:", error);
         return res.status(500).json({ success: false, message: error.message });
     }
 };

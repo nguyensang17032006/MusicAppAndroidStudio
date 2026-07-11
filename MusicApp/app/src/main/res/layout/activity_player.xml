@@ -19,14 +19,7 @@
 
 
 
-    <ImageView
-        android:id="@+id/btn_settings"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:src="@drawable/ic_settings"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/white" />
+
 
     <!-- Artwork -->
     <com.google.android.material.imageview.ShapeableImageView
@@ -76,18 +69,7 @@
                 android:textSize="16sp" />
         </LinearLayout>
 
-        <ImageView
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_marginEnd="16dp"
-            android:src="@drawable/ic_plus"
-            app:tint="@color/white" />
 
-        <ImageView
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:src="@drawable/ic_download"
-            app:tint="@color/white" />
     </LinearLayout>
 
     <!-- Progress Bar & Time -->

@@ -30,11 +30,13 @@ import com.example.musicappdemo.data.SimpleResponse;
 import com.example.musicappdemo.data.RetrofitClient;
 import com.example.musicappdemo.utils.MusicManager;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -75,8 +77,11 @@ public class SearchFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().isEmpty()) {
+                String query = s.toString().trim();
+                if (query.isEmpty()) {
                     resetUI();
+                } else {
+                    performLiveSearch(query);
                 }
             }
 
@@ -191,22 +196,34 @@ public class SearchFragment extends Fragment {
     private void performSearch(String query) {
         hideKeyboard();
         saveSearchHistory(query);
+        executeSearch(query);
+    }
 
+    private void performLiveSearch(String query) {
+        // Không lưu history, không ẩn keyboard khi đang gõ
+        executeSearch(query);
+    }
+
+    private void executeSearch(String query) {
         filteredSongs.clear();
         recommendedGenres.clear();
         Set<String> foundGenreNames = new HashSet<>();
-        String lowerQuery = query.toLowerCase().trim();
+        String lowerQuery = removeAccent(query.toLowerCase().trim());
 
         for (Song song : allSongs) {
-            String title = song.getTitle() != null ? song.getTitle().toLowerCase() : "";
-            String artists = song.getArtists() != null ? song.getArtists().get(0).getName().toLowerCase() : "";
+            String title = song.getTitle() != null ? removeAccent(song.getTitle().toLowerCase()) : "";
+            String artists = (song.getArtists() != null && !song.getArtists().isEmpty()) 
+                    ? removeAccent(song.getArtists().get(0).getName().toLowerCase()) 
+                    : "";
 
             if (title.contains(lowerQuery) || artists.contains(lowerQuery)) {
                 filteredSongs.add(song);
                 if (song.getGenres() != null && !song.getGenres().isEmpty()) {
-                    String[] genres = song.getGenres().get(0).getName().split(",");
-                    for (String g : genres) {
-                        foundGenreNames.add(g.trim());
+                    for (Genre g : song.getGenres()) {
+                        if (g.getName() != null) {
+                            String[] parts = g.getName().split(",");
+                            for (String p : parts) foundGenreNames.add(p.trim());
+                        }
                     }
                 }
             }
@@ -221,7 +238,6 @@ public class SearchFragment extends Fragment {
             binding.rvSearchResults.setVisibility(View.VISIBLE);
             binding.tvNoResults.setVisibility(View.GONE);
 
-            // Tìm các đối tượng Genre tương ứng hoặc tạo mới nếu không thấy
             for (String genreName : foundGenreNames) {
                 Genre match = null;
                 for (Genre g : allGenres) {
@@ -233,9 +249,7 @@ public class SearchFragment extends Fragment {
                 if (match != null) {
                     recommendedGenres.add(match);
                 } else {
-                    // Tạo Genre "ảo" nếu API không trả về nhưng bài hát có thể loại này
-                    Genre virtualGenre = new Genre(genreName);
-                    recommendedGenres.add(virtualGenre);
+                    recommendedGenres.add(new Genre(genreName));
                 }
             }
 
@@ -312,6 +326,13 @@ public class SearchFragment extends Fragment {
                 sb.append("|");
         }
         prefs.edit().putString(KEY_HISTORY, sb.toString()).apply();
+    }
+
+    private String removeAccent(String s) {
+        if (s == null) return "";
+        String temp = Normalizer.normalize(s, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(temp).replaceAll("").replace('đ', 'd').replace('Đ', 'D');
     }
 
     @Override

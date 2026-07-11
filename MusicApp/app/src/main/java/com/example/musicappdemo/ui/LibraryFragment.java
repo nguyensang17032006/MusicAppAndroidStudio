@@ -102,7 +102,9 @@ public class LibraryFragment extends Fragment {
         playlists = libraryManager.getPlaylists();
         playlistAdapter = new PlaylistLibraryAdapter(getContext(), playlists, playlist -> {
             Intent intent = new Intent(getActivity(), PlaylistDetailActivity.class);
+            intent.putExtra("playlist_id", playlist.getId());
             intent.putExtra("playlist_title", playlist.getName());
+            intent.putExtra("playlist_cover", playlist.getCover_url());
             intent.putExtra("playlist_songs", new ArrayList<>(playlist.getSongs()));
             startActivity(intent);
         });
@@ -116,6 +118,7 @@ public class LibraryFragment extends Fragment {
         artistAdapter = new ArtistAdapter(getContext(), displayArtists, artist -> {
             Intent intent = new Intent(getActivity(), ArtistDetailActivity.class);
             intent.putExtra("artist_name", artist.getName());
+            intent.putExtra("artist_avatar", artist.getAvatar_url());
             startActivity(intent);
         });
         binding.rvArtists.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -223,16 +226,24 @@ public class LibraryFragment extends Fragment {
 
         ArtistAdapter searchAdapter = new ArtistAdapter(getContext(), searchResults, artist -> {
             LibraryManager libraryManager = LibraryManager.getInstance(getContext());
-            libraryManager.followArtist(artist);
             
-            // Tự động add các bài nhạc của artist vào Liked Songs
-            for (Song song : allSongs) {
-                if (song.getArtists().get(0).getName() != null && song.getArtists().get(0).getName().contains(artist.getName())) {
-                    libraryManager.addLikedSong(song);
+            // Kiểm tra trùng lặp
+            boolean isAlreadyAdded = false;
+            for (Artist followed : followedArtists) {
+                if (followed.getId().equals(artist.getId())) {
+                    isAlreadyAdded = true;
+                    break;
                 }
             }
+
+            if (isAlreadyAdded) {
+                Toast.makeText(getContext(), "Nghệ sĩ này đã được thêm rồi!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            libraryManager.followArtist(artist);
             
-            Toast.makeText(getContext(), "Đã thêm " + artist.getName() + " và các bài hát của họ", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Đã thêm " + artist.getName() + " vào thư viện", Toast.LENGTH_SHORT).show();
             dialog.dismiss();
             refreshLibrary();
         });
