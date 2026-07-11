@@ -114,7 +114,7 @@ public class ProfileActivity extends AppCompatActivity {
         });
 
         binding.btnChangePassword.setOnClickListener(v -> {
-            startActivity(new Intent(this, ForgotPasswordActivity.class));
+            startActivity(new Intent(this, ChangePasswordActivity.class));
         });
 
         binding.btnLogout.setOnClickListener(v -> {
