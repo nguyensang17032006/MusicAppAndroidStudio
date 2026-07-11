@@ -7,8 +7,54 @@ const db = require('./config/db');
 const cloudinaryConfig = require('./config/cloudinary');
 const supabase = require('./config/supabase');
 
+const http = require('http');
+const { Server } = require('socket.io');
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
+
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: { origin: '*' }
+});
+
+const connectedUsers = {};
+
+io.on('connection', (socket) => {
+    socket.on('user_connected', (userId) => {
+        if (!userId) return;
+        connectedUsers[userId] = {
+            socketId: socket.id,
+            isOnline: true,
+            currentSong: null
+        };
+        io.emit('friend_status_changed', { userId, isOnline: true, currentSong: null });
+    });
+
+    socket.on('playing_song', (data) => {
+        const { userId, songTitle } = data;
+        if (userId && connectedUsers[userId]) {
+            connectedUsers[userId].currentSong = songTitle;
+            io.emit('friend_status_changed', { userId, isOnline: true, currentSong: songTitle });
+        }
+    });
+
+    socket.on('disconnect', () => {
+        for (const [userId, info] of Object.entries(connectedUsers)) {
+            if (info.socketId === socket.id) {
+                delete connectedUsers[userId];
+                io.emit('friend_status_changed', { userId, isOnline: false, currentSong: null });
+                break;
+            }
+        }
+    });
+});
+
+app.use((req, res, next) => {
+    req.io = io;
+    req.connectedUsers = connectedUsers;
+    next();
+});
 
 app.use(cors());
 app.use(express.json());
@@ -62,6 +108,6 @@ app.use((err, req, res, next) => {
     next();
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

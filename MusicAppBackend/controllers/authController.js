@@ -340,7 +340,18 @@ const getFriendsList = async (req, res) => {
 
         const [rows] = await db.query(query, friendIds);
 
-        return res.status(200).json({ success: true, data: rows });
+        // 4. Lấy trạng thái Online và bài hát đang nghe từ RAM (Socket.IO)
+        const connectedUsers = req.connectedUsers || {};
+        const enrichedRows = rows.map(user => {
+            const statusInfo = connectedUsers[user.id];
+            return {
+                ...user,
+                isOnline: statusInfo ? statusInfo.isOnline : false,
+                currentSong: statusInfo ? statusInfo.currentSong : null
+            };
+        });
+
+        return res.status(200).json({ success: true, data: enrichedRows });
     } catch (err) {
         return res.status(500).json({ success: false, message: err.message });
     }

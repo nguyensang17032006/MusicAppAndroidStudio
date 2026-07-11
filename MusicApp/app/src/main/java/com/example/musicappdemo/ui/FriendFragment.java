@@ -48,6 +48,27 @@ public class FriendFragment extends Fragment {
         setupRecyclerView();
         loadFriends();
 
+        com.example.musicappdemo.data.SocketManager.getInstance().getSocket().on("friend_status_changed", args -> {
+            if (args.length > 0) {
+                try {
+                    org.json.JSONObject data = (org.json.JSONObject) args[0];
+                    String friendUserId = data.getString("userId");
+                    boolean isOnline = data.getBoolean("isOnline");
+                    String currentSong = data.has("currentSong") && !data.isNull("currentSong") ? data.getString("currentSong") : null;
+
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            if (friendsAdapter != null) {
+                                friendsAdapter.updateFriendStatus(friendUserId, isOnline, currentSong);
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         binding.btnCopyLink.setOnClickListener(v -> {
             String userId = SessionManager.get(requireContext()).getUserId();
             if (userId != null && !userId.isEmpty()) {
@@ -175,6 +196,7 @@ public class FriendFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        com.example.musicappdemo.data.SocketManager.getInstance().getSocket().off("friend_status_changed");
         binding = null;
     }
 }

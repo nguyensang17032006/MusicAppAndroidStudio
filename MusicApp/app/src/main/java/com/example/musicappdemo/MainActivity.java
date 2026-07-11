@@ -45,6 +45,11 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
 
         updateMiniPlayerVisibility();
 
+        String currentUserId = SessionManager.get(this).getUserId();
+        if (currentUserId != null && !currentUserId.isEmpty()) {
+            com.example.musicappdemo.data.SocketManager.getInstance().connect(currentUserId);
+        }
+
         // Hiển thị Trang Chủ đầu tiên
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -185,6 +190,9 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
     public void onSongChanged(Song song) {
         updateMiniPlayerVisibility();
         if (song != null) {
+            String currentUserId = SessionManager.get(this).getUserId();
+            com.example.musicappdemo.data.SocketManager.getInstance().emitPlayingSong(currentUserId, song.getTitle());
+
             String artistName = (song.getArtists() != null && !song.getArtists().isEmpty()) ? song.getArtists().get(0).getName() : "Unknown Artist";
 
             binding.miniPlayerTitle.setText(song.getTitle());
@@ -202,6 +210,7 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
     protected void onDestroy() {
         super.onDestroy();
         progressHandler.removeCallbacks(progressRunnable);
+        com.example.musicappdemo.data.SocketManager.getInstance().disconnect();
     }
 
     @Override

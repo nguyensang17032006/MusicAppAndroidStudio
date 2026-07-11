@@ -134,6 +134,11 @@ public class PlayerActivity extends AppCompatActivity implements MusicManager.On
     @Override
     public void onSongChanged(Song song) {
         updateUI(song);
+        if (song != null) {
+            String currentUserId = com.example.musicappdemo.data.SessionManager.get(this).getUserId();
+            com.example.musicappdemo.data.SocketManager.getInstance().emitPlayingSong(currentUserId, song.getTitle());
+        }
+        
         if (playlistAdapter != null) {
             playlistAdapter.setPlayingIndex(MusicManager.getInstance().getCurrentIndex());
             binding.rvPlaylist.smoothScrollToPosition(MusicManager.getInstance().getCurrentIndex());

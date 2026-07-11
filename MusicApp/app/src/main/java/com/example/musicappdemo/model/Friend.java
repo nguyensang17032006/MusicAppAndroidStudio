@@ -15,6 +15,12 @@ public class Friend {
     @SerializedName("streak")
     private int streak;
 
+    @SerializedName("isOnline")
+    private boolean isOnline;
+
+    @SerializedName("currentSong")
+    private String currentSong;
+
     public String getId() {
         return id;
     }
@@ -45,5 +51,21 @@ public class Friend {
 
     public void setStreak(int streak) {
         this.streak = streak;
+    }
+
+    public boolean isOnline() {
+        return isOnline;
+    }
+
+    public void setOnline(boolean online) {
+        isOnline = online;
+    }
+
+    public String getCurrentSong() {
+        return currentSong;
+    }
+
+    public void setCurrentSong(String currentSong) {
+        this.currentSong = currentSong;
     }
 }

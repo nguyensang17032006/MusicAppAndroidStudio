@@ -33,6 +33,18 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
         notifyDataSetChanged();
     }
 
+    public void updateFriendStatus(String userId, boolean isOnline, String currentSong) {
+        if (friends == null) return;
+        for (int i = 0; i < friends.size(); i++) {
+            if (friends.get(i).getId().equals(userId)) {
+                friends.get(i).setOnline(isOnline);
+                friends.get(i).setCurrentSong(currentSong);
+                notifyItemChanged(i);
+                break;
+            }
+        }
+    }
+
     @NonNull
     @Override
     public FriendViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -46,7 +58,19 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
         
         holder.tvName.setText(friend.getEmail());
         holder.tvStreak.setText(friend.getStreak() + " \uD83D\uDD25"); // 🔥 emoji
-        holder.tvStatus.setText("Bạn bè");
+
+        if (friend.isOnline()) {
+            if (friend.getCurrentSong() != null && !friend.getCurrentSong().isEmpty()) {
+                holder.tvStatus.setText("Đang nghe: " + friend.getCurrentSong());
+                holder.tvStatus.setTextColor(android.graphics.Color.parseColor("#1DB954")); // Xanh lá
+            } else {
+                holder.tvStatus.setText("Online");
+                holder.tvStatus.setTextColor(android.graphics.Color.parseColor("#1DB954"));
+            }
+        } else {
+            holder.tvStatus.setText("Offline");
+            holder.tvStatus.setTextColor(android.graphics.Color.GRAY);
+        }
 
         if (friend.getAvatarUrl() != null && !friend.getAvatarUrl().isEmpty()) {
             Glide.with(context).load(friend.getAvatarUrl()).placeholder(R.drawable.ic_user).into(holder.ivAvatar);
