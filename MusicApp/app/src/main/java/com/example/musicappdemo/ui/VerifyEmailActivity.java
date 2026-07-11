@@ -72,7 +72,7 @@ public class VerifyEmailActivity extends AppCompatActivity {
         RetrofitClient.getApiService().verifyAndRegister(request).enqueue(new Callback<AuthResponse>() {
             @Override
             public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
-                System.out.println("👉 Register Verify HTTP Code: " + response.code());
+
 
                 if (response.isSuccessful() && response.body() != null) {
                     AuthResponse authResponse = response.body();
@@ -125,7 +125,6 @@ public class VerifyEmailActivity extends AppCompatActivity {
                     // Chuyển sang màn hình ResetPassword và đính kèm Token + Email
                     Intent intent = new Intent(VerifyEmailActivity.this, ResetPasswordActivity.class);
                     intent.putExtra("access_token", tokenTamThoi);
-                    Toast.makeText(VerifyEmailActivity.this,""+ tokenTamThoi,Toast.LENGTH_SHORT).show();
                     startActivity(intent);
                     finish();
                 } else {

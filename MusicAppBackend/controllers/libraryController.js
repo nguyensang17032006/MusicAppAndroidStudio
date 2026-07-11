@@ -4,17 +4,46 @@ const db = require('../config/db');
 const getLikedSongs = async (req, res) => {
     const { userId } = req.params;
     try {
-        const [rows] = await db.query(`
-            SELECT s.*,
-                   (SELECT GROUP_CONCAT(a.name SEPARATOR ', ')
-                    FROM artists a
-                    JOIN song_artists sa ON a.id = sa.artist_id
-                    WHERE sa.song_id = s.id) as artist_names
+        const [songs] = await db.query(`
+            SELECT s.*
             FROM songs s
             JOIN user_liked_songs uls ON s.id = uls.song_id
             WHERE uls.user_id = ?
         `, [userId]);
-        res.status(200).json({ success: true, data: rows });
+
+        if (songs.length === 0) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        const songIds = songs.map(s => s.id);
+        const [songArtists] = await db.query(`
+            SELECT sa.song_id, sa.artist_id, sa.is_main_artist, a.name 
+            FROM song_artists sa 
+            JOIN artists a ON sa.artist_id = a.id
+            WHERE sa.song_id IN (?)
+        `, [songIds]);
+
+        const artistsMap = {};
+        songArtists.forEach(sa => {
+            if (!artistsMap[sa.song_id]) {
+                artistsMap[sa.song_id] = [];
+            }
+            artistsMap[sa.song_id].push({
+                id: sa.artist_id,
+                artist_id: sa.artist_id,
+                name: sa.name,
+                is_main_artist: sa.is_main_artist === 1 || sa.is_main_artist === true
+            });
+        });
+
+        const mappedSongs = songs.map(s => {
+            return {
+                ...s,
+                artists: artistsMap[s.id] || []
+            };
+        });
+
+        res.status(200).json({ success: true, data: mappedSongs });
     } catch (error) {
         console.error("Error in getLikedSongs:", error);
         res.status(500).json({ success: false, message: error.message });
@@ -49,16 +78,43 @@ const getUserPlaylists = async (req, res) => {
 
         for (let p of playlists) {
             const [songs] = await db.query(`
-                SELECT s.*,
-                       (SELECT GROUP_CONCAT(a.name SEPARATOR ', ')
-                        FROM artists a
-                        JOIN song_artists sa ON a.id = sa.artist_id
-                        WHERE sa.song_id = s.id) as artist_names
+                SELECT s.*
                 FROM songs s
                 JOIN playlist_songs ps ON s.id = ps.song_id
                 WHERE ps.playlist_id = ?
             `, [p.id]);
-            p.songs = songs;
+
+            if (songs.length > 0) {
+                const songIds = songs.map(s => s.id);
+                const [songArtists] = await db.query(`
+                    SELECT sa.song_id, sa.artist_id, sa.is_main_artist, a.name 
+                    FROM song_artists sa 
+                    JOIN artists a ON sa.artist_id = a.id
+                    WHERE sa.song_id IN (?)
+                `, [songIds]);
+
+                const artistsMap = {};
+                songArtists.forEach(sa => {
+                    if (!artistsMap[sa.song_id]) {
+                        artistsMap[sa.song_id] = [];
+                    }
+                    artistsMap[sa.song_id].push({
+                        id: sa.artist_id,
+                        artist_id: sa.artist_id,
+                        name: sa.name,
+                        is_main_artist: sa.is_main_artist === 1 || sa.is_main_artist === true
+                    });
+                });
+
+                p.songs = songs.map(s => {
+                    return {
+                        ...s,
+                        artists: artistsMap[s.id] || []
+                    };
+                });
+            } else {
+                p.songs = [];
+            }
         }
 
         res.status(200).json({ success: true, data: playlists });

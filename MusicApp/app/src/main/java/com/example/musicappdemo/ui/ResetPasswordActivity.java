@@ -52,7 +52,6 @@ public class ResetPasswordActivity extends AppCompatActivity {
             // 1. Lấy accessToken tạm thời đã lưu từ Bước 2 (Xác thực OTP thành công)
             // Nếu bạn truyền token qua Intent từ Activity trước sang, hãy lấy như sau:
             String accessToken = getIntent().getStringExtra("access_token");
-            Toast.makeText(ResetPasswordActivity.this,""+accessToken,Toast.LENGTH_SHORT).show();
 
             // 2. Khởi tạo Object Request gửi kèm Email để Node.js in Log cho dễ nhìn (nếu muốn)
             NewPasswordRequest newPasswordRequest = new NewPasswordRequest(accessToken, newPassword);

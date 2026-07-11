@@ -44,6 +44,7 @@ dependencies {
     implementation libs.retrofit
     implementation libs.retrofit.gson
     implementation libs.glide
+    implementation libs.androidx.media
     testImplementation libs.junit
     implementation 'com.google.code.gson:gson:2.11.0'
     androidTestImplementation libs.ext.junit

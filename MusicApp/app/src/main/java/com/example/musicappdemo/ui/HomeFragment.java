@@ -95,6 +95,7 @@ public class HomeFragment extends Fragment {
                     List<Song> allSongs = response.body().getData();
 
                     if (allSongs != null) {
+                        com.example.musicappdemo.utils.MusicManager.getInstance().setAllSongs(allSongs);
                         // 1. Bài nhạc mới nhất (Giới hạn 5 bài)
                         List<Song> latestSongs = new ArrayList<>(allSongs);
                         // Giả sử bài mới nhất nằm ở cuối list hoặc có thuộc tính ngày tháng, ở đây ta lấy 5 bài đầu/cuối

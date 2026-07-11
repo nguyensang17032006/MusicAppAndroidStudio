@@ -1,12 +1,15 @@
 package com.example.musicappdemo.utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 
 import com.example.musicappdemo.model.Song;
+import com.example.musicappdemo.services.MusicService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,8 +21,10 @@ public class MusicManager {
     private Song currentSong;
     private List<Song> playlist = new ArrayList<>();
     private List<Song> originalPlaylist = new ArrayList<>();
+    private List<Song> allSongs = new ArrayList<>();
     private int currentIndex = -1;
     private OnMusicStatusListener listener;
+    private OnMusicStatusListener serviceListener;
 
     private boolean isShuffle = false;
     private boolean isRepeat = false;
@@ -36,6 +41,18 @@ public class MusicManager {
 
     public void setListener(OnMusicStatusListener listener) {
         this.listener = listener;
+    }
+
+    public void setServiceListener(OnMusicStatusListener listener) {
+        this.serviceListener = listener;
+        if (listener != null && currentSong != null) {
+            listener.onSongChanged(currentSong);
+            listener.onStatusChanged(isPlaying());
+        }
+    }
+
+    public void setAllSongs(List<Song> allSongs) {
+        this.allSongs = allSongs;
     }
 
     public void playSong(Context context, Song song) {
@@ -120,6 +137,10 @@ public class MusicManager {
 
         try {
             Log.d("MusicManager", "Đang phát: " + currentSong.getTitle() + " URL: " + currentSong.getFile_url());
+            
+            // Start Foreground Service to keep app alive in background
+            startMusicService(context);
+            
             mediaPlayer.setDataSource(context, Uri.parse(currentSong.getFile_url()));
             mediaPlayer.prepareAsync();
             mediaPlayer.setOnPreparedListener(mp -> {
@@ -127,6 +148,10 @@ public class MusicManager {
                 if (listener != null) {
                     listener.onSongChanged(currentSong);
                     listener.onStatusChanged(true);
+                }
+                if (serviceListener != null) {
+                    serviceListener.onSongChanged(currentSong);
+                    serviceListener.onStatusChanged(true);
                 }
             });
             mediaPlayer.setOnErrorListener((mp, what, extra) -> {
@@ -139,6 +164,7 @@ public class MusicManager {
                 } else if (currentIndex == playlist.size() - 1 && !isRepeat) {
                     // End of playlist
                     if (listener != null) listener.onStatusChanged(false);
+                    if (serviceListener != null) serviceListener.onStatusChanged(false);
                 } else {
                     nextSong(context);
                 }
@@ -150,14 +176,45 @@ public class MusicManager {
 
     public void nextSong(Context context) {
         if (playlist.isEmpty()) return;
-        currentIndex = (currentIndex + 1) % playlist.size();
-        playCurrentIndex(context);
+        if (playlist.size() == 1) {
+            playRandomSong(context);
+        } else {
+            currentIndex = (currentIndex + 1) % playlist.size();
+            playCurrentIndex(context);
+        }
     }
 
     public void previousSong(Context context) {
         if (playlist.isEmpty()) return;
-        currentIndex = (currentIndex - 1 + playlist.size()) % playlist.size();
-        playCurrentIndex(context);
+        if (playlist.size() == 1) {
+            playRandomSong(context);
+        } else {
+            currentIndex = (currentIndex - 1 + playlist.size()) % playlist.size();
+            playCurrentIndex(context);
+        }
+    }
+
+    private void playRandomSong(Context context) {
+        if (allSongs == null || allSongs.isEmpty()) {
+            playCurrentIndex(context);
+            return;
+        }
+
+        java.util.Random random = new java.util.Random();
+        Song nextSong = currentSong;
+
+        if (allSongs.size() > 1) {
+            int maxAttempts = 10;
+            int attempts = 0;
+            while (attempts < maxAttempts && (nextSong == null || nextSong.getId().equals(currentSong.getId()))) {
+                nextSong = allSongs.get(random.nextInt(allSongs.size()));
+                attempts++;
+            }
+        } else {
+            nextSong = allSongs.get(0);
+        }
+
+        playSong(context, nextSong);
     }
 
     public List<Song> getPlaylist() {
@@ -188,6 +245,10 @@ public class MusicManager {
             listener.onSongChanged(null);
             listener.onStatusChanged(false);
         }
+        if (serviceListener != null) {
+            serviceListener.onSongChanged(null);
+            serviceListener.onStatusChanged(false);
+        }
     }
 
     public void togglePause() {
@@ -195,10 +256,21 @@ public class MusicManager {
             if (mediaPlayer.isPlaying()) {
                 mediaPlayer.pause();
                 if (listener != null) listener.onStatusChanged(false);
+                if (serviceListener != null) serviceListener.onStatusChanged(false);
             } else {
                 mediaPlayer.start();
                 if (listener != null) listener.onStatusChanged(true);
+                if (serviceListener != null) serviceListener.onStatusChanged(true);
             }
+        }
+    }
+
+    private void startMusicService(Context context) {
+        Intent intent = new Intent(context.getApplicationContext(), MusicService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent);
+        } else {
+            context.startService(intent);
         }
     }
 
