@@ -332,7 +332,9 @@ const getFriendsList = async (req, res) => {
         // 3. Truy vấn MySQL lấy email, avatar và streak
         const placeholders = friendIds.map(() => '?').join(',');
         const query = `
-            SELECT u.id, u.email, u.avatar_url, COALESCE(s.current_streak, 0) as streak
+            SELECT u.id, u.email, u.avatar_url, 
+                   COALESCE(s.current_streak, 0) as streak,
+                   COALESCE(s.today_listening_time, 0) as today_listening_time
             FROM users u
             LEFT JOIN user_streaks s ON u.id = s.user_id
             WHERE u.id IN (${placeholders})

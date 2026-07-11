@@ -10,7 +10,7 @@ import io.socket.client.Socket;
 public class SocketManager {
     private static SocketManager instance;
     private Socket mSocket;
-    private static final String SERVER_URL = "http://10.0.2.2:3000"; // Hoặc địa chỉ VPS của bạn
+    private static final String SERVER_URL = "http://45.32.105.30:3000"; // Dùng IP VPS chung cho cả máy thật và máy ảo
 
     private SocketManager() {
         try {

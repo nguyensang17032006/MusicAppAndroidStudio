@@ -57,7 +57,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
         Friend friend = friends.get(position);
         
         holder.tvName.setText(friend.getEmail());
-        holder.tvStreak.setText(friend.getStreak() + " \uD83D\uDD25"); // 🔥 emoji
+        int minutesListened = friend.getTodayListeningTime() / 60;
+        if (minutesListened > 15) minutesListened = 15; // Hiển thị tối đa 15m
+        holder.tvStreak.setText(minutesListened + "/15m - " + friend.getStreak() + " \uD83D\uDD25"); // Ví dụ: 6/15m - 5 🔥
 
         if (friend.isOnline()) {
             if (friend.getCurrentSong() != null && !friend.getCurrentSong().isEmpty()) {

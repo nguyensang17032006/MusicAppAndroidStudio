@@ -21,6 +21,17 @@ public class Friend {
     @SerializedName("currentSong")
     private String currentSong;
 
+    @SerializedName("today_listening_time")
+    private int todayListeningTime;
+
+    public int getTodayListeningTime() {
+        return todayListeningTime;
+    }
+
+    public void setTodayListeningTime(int todayListeningTime) {
+        this.todayListeningTime = todayListeningTime;
+    }
+
     public String getId() {
         return id;
     }

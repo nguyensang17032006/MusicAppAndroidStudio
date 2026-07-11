@@ -136,8 +136,8 @@ const trackTime = async (req, res) => {
 
         const lastCompletedStr = formatDateString(lastCompletedDate);
 
-        // If listening time >= 30 mins (1800s) and not yet completed today
-        if (newListeningTime >= 1800 && lastCompletedStr !== todayStr) {
+        // If listening time >= 15 mins (900s) and not yet completed today
+        if (newListeningTime >= 900 && lastCompletedStr !== todayStr) {
             if (lastCompletedStr === yesterdayStr) {
                 currentStreak += 1;
             } else {
