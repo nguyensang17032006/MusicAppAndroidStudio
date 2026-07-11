@@ -22,13 +22,17 @@ function getVietnamDateStrings() {
     return { todayStr, yesterdayStr };
 }
 
-// Format MySQL DATE object to YYYY-MM-DD string timezone-safely
 function formatDateString(dateVal) {
     if (!dateVal) return null;
     const d = new Date(dateVal);
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
+    // Chuyển đổi sang múi giờ Việt Nam (GMT+7)
+    const tzOffset = 7 * 60; // GMT+7 in minutes
+    const localTime = d.getTime() + (d.getTimezoneOffset() * 60000) + (tzOffset * 60000);
+    const vnDate = new Date(localTime);
+    
+    const yyyy = vnDate.getFullYear();
+    const mm = String(vnDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(vnDate.getDate()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}`;
 }
 

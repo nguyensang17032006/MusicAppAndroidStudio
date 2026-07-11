@@ -281,7 +281,7 @@ public class ProfileActivity extends AppCompatActivity {
                     binding.tvStreakTitle.setText("Current Streak: " + streak.getCurrentStreak() + " day" + (streak.getCurrentStreak() == 1 ? "" : "s"));
                     
                     int mins = streak.getTodayListeningTime() / 60;
-                    binding.tvStreakSubtitle.setText("Today: " + mins + "/30 mins listened");
+                    binding.tvStreakSubtitle.setText("Today: " + mins + "/15 mins listened");
                     binding.tvMaxStreakVal.setText(streak.getMaxStreak() + " 🔥");
                     
                     if (streak.getCurrentStreak() > 0) {
