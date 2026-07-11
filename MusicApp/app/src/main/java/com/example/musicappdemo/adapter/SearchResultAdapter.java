@@ -26,10 +26,17 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
     private Context context;
     private List<Song> songList;
+    private String currentPlaylistId;
 
     public SearchResultAdapter(Context context, List<Song> songList) {
         this.context = context;
         this.songList = songList;
+    }
+
+    public SearchResultAdapter(Context context, List<Song> songList, String playlistId) {
+        this.context = context;
+        this.songList = songList;
+        this.currentPlaylistId = playlistId;
     }
 
     @NonNull
@@ -76,14 +83,41 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
         holder.binding.btnMore.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(context, holder.binding.btnMore);
-            popupMenu.getMenu().add("Thêm vào danh sách phát");
-            popupMenu.getMenu().add("Thêm vào playlist");
+            
+            // 1. Logic cho "Danh sách phát" (Queue)
+            boolean isInQueue = false;
+            for (Song s : MusicManager.getInstance().getPlaylist()) {
+                if (s.getId().equals(song.getId())) {
+                    isInQueue = true;
+                    break;
+                }
+            }
+            
+            if (isInQueue) {
+                popupMenu.getMenu().add("Xóa khỏi danh sách phát");
+            } else {
+                popupMenu.getMenu().add("Thêm vào danh sách phát");
+            }
+
+            // 2. Logic cho Playlist hiện tại (nếu đang ở màn hình playlist)
+            if (currentPlaylistId != null) {
+                popupMenu.getMenu().add("Xóa khỏi playlist này");
+            } else {
+                popupMenu.getMenu().add("Thêm vào playlist");
+            }
+
             popupMenu.setOnMenuItemClickListener(item -> {
-                if (item.getTitle().equals("Thêm vào danh sách phát")) {
+                String title = item.getTitle().toString();
+                if (title.equals("Thêm vào danh sách phát")) {
                     MusicManager.getInstance().addSongToPlaylist(context, song);
                     Toast.makeText(context, "Đã thêm vào danh sách phát", Toast.LENGTH_SHORT).show();
-                } else if (item.getTitle().equals("Thêm vào playlist")) {
+                } else if (title.equals("Xóa khỏi danh sách phát")) {
+                    MusicManager.getInstance().removeSongFromQueue(song.getId());
+                    Toast.makeText(context, "Đã xóa khỏi danh sách phát", Toast.LENGTH_SHORT).show();
+                } else if (title.equals("Thêm vào playlist")) {
                     showAddToPlaylistDialog(song);
+                } else if (title.equals("Xóa khỏi playlist này")) {
+                    LibraryManager.getInstance(context).removeSongFromPlaylist(currentPlaylistId, song.getId());
                 }
                 return true;
             });

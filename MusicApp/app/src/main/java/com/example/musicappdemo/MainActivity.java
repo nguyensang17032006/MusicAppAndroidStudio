@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.example.musicappdemo.data.RetrofitClient;
 import com.example.musicappdemo.databinding.ActivityMainBinding;
 import com.example.musicappdemo.model.Song;
 import com.example.musicappdemo.ui.HomeFragment;
@@ -61,13 +62,13 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
         });
 
         // Xử lý khi click vào Mini Player
-        binding.miniPlayerContainer.setOnClickListener(v -> {
+        binding.miniPlayer.miniPlayerContainer.setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, PlayerActivity.class));
         });
 
-        binding.miniPlayerPlay.setOnClickListener(v -> MusicManager.getInstance().togglePause());
+        binding.miniPlayer.miniPlayerPlay.setOnClickListener(v -> MusicManager.getInstance().togglePause());
 
-        binding.miniPlayerClose.setOnClickListener(v -> {
+        binding.miniPlayer.miniPlayerClose.setOnClickListener(v -> {
             MusicManager.getInstance().stopMusic();
             updateMiniPlayerVisibility();
         });
@@ -83,8 +84,8 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
                     int currentPosition = MusicManager.getInstance().getCurrentPosition();
                     int duration = MusicManager.getInstance().getDuration();
                     if (duration > 0) {
-                        binding.miniPlayerProgress.setMax(duration);
-                        binding.miniPlayerProgress.setProgress(currentPosition);
+                        binding.miniPlayer.miniPlayerProgress.setMax(duration);
+                        binding.miniPlayer.miniPlayerProgress.setProgress(currentPosition);
                     }
                 }
                 progressHandler.postDelayed(this, 1000);
@@ -107,9 +108,9 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
 
     private void updateMiniPlayerVisibility() {
         if (MusicManager.getInstance().getCurrentSong() != null) {
-            binding.miniPlayerContainer.setVisibility(android.view.View.VISIBLE);
+            binding.miniPlayer.miniPlayerContainer.setVisibility(android.view.View.VISIBLE);
         } else {
-            binding.miniPlayerContainer.setVisibility(android.view.View.GONE);
+            binding.miniPlayer.miniPlayerContainer.setVisibility(android.view.View.GONE);
         }
     }
 
@@ -119,14 +120,14 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
         if (song != null) {
             String artistName = (song.getArtists() != null && !song.getArtists().isEmpty()) ? song.getArtists().get(0).getName() : "Unknown Artist";
 
-            binding.miniPlayerTitle.setText(song.getTitle());
-            binding.miniPlayerArtist.setText(artistName);
+            binding.miniPlayer.miniPlayerTitle.setText(song.getTitle());
+            binding.miniPlayer.miniPlayerArtist.setText(artistName);
             if (song.getCover_url() != null && !song.getCover_url().isEmpty()) {
-                Glide.with(this).load(song.getCover_url()).into(binding.miniPlayerImg);
+                Glide.with(this).load(RetrofitClient.getFullUrl(song.getCover_url())).into(binding.miniPlayer.miniPlayerImg);
             } else {
-                binding.miniPlayerImg.setImageResource(R.drawable.placeholder_img);
+                binding.miniPlayer.miniPlayerImg.setImageResource(R.drawable.placeholder_img);
             }
-            binding.miniPlayerProgress.setProgress(0);
+            binding.miniPlayer.miniPlayerProgress.setProgress(0);
         }
     }
 
@@ -138,6 +139,6 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
 
     @Override
     public void onStatusChanged(boolean isPlaying) {
-        binding.miniPlayerPlay.setImageResource(isPlaying ? R.drawable.ic_pause : R.drawable.ic_play);
+        binding.miniPlayer.miniPlayerPlay.setImageResource(isPlaying ? R.drawable.ic_pause : R.drawable.ic_play);
     }
 }

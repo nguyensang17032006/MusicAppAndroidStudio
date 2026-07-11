@@ -247,6 +247,27 @@ public class LibraryManager {
         });
     }
 
+    public void removeSongFromPlaylist(String playlistId, String songId) {
+        Map<String, String> body = new HashMap<>();
+        body.put("playlistId", playlistId);
+        body.put("songId", songId);
+        RetrofitClient.getApiService().removeSongFromPlaylist(body).enqueue(new Callback<SimpleResponse<Void>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    syncPlaylists();
+                    showToast("Đã xóa khỏi playlist");
+                } else {
+                    showToast("Lỗi khi xóa khỏi playlist");
+                }
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {
+                showToast("Lỗi kết nối");
+            }
+        });
+    }
+
     public void deletePlaylist(String playlistId) {
         String userId = getUserId();
         if (userId == null) return;

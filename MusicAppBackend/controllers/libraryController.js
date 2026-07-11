@@ -207,6 +207,20 @@ const addSongToPlaylist = async (req, res) => {
     }
 };
 
+const removeSongFromPlaylist = async (req, res) => {
+    const { playlistId, songId } = req.body;
+    if (!playlistId || !songId) {
+        return res.status(400).json({ success: false, message: "Missing playlistId or songId" });
+    }
+    try {
+        await db.query('DELETE FROM playlist_songs WHERE playlist_id = ? AND song_id = ?', [playlistId, songId]);
+        res.status(200).json({ success: true, message: 'Removed from playlist' });
+    } catch (error) {
+        console.error("Error in removeSongFromPlaylist:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 const updatePlaylistCover = async (req, res) => {
     const { playlistId, coverUrl } = req.body;
     if (!playlistId || !coverUrl) {
@@ -292,6 +306,7 @@ module.exports = {
     createPlaylist,
     deletePlaylist,
     addSongToPlaylist,
+    removeSongFromPlaylist,
     updatePlaylistCover,
     getFollowedArtists,
     toggleFollowArtist

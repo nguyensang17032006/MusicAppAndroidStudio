@@ -71,6 +71,9 @@ public interface ApiService {
     @POST("api/library/playlists/add-song")
     Call<SimpleResponse<Void>> addSongToPlaylist(@Body java.util.Map<String, String> body);
 
+    @POST("api/library/playlists/remove-song")
+    Call<SimpleResponse<Void>> removeSongFromPlaylist(@Body java.util.Map<String, String> body);
+
     @POST("api/library/playlists/delete")
     Call<SimpleResponse<Void>> deletePlaylist(@Body java.util.Map<String, String> body);
 

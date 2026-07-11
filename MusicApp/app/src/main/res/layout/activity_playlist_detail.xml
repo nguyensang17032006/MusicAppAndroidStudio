@@ -101,7 +101,14 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvPlaylistSongs"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:padding="16dp" />
+
+    <include
+        android:id="@+id/mini_player"
+        layout="@layout/layout_mini_player"
+        android:layout_width="match_parent"
+        android:layout_height="64dp" />
 
 </LinearLayout>
