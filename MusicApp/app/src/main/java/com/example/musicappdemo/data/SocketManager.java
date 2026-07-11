@@ -1,0 +1,93 @@
+package com.example.musicappdemo.data;
+
+import android.util.Log;
+
+import java.net.URISyntaxException;
+
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
+
+public class SocketManager {
+    private static SocketManager instance;
+    private Socket mSocket;
+    private android.content.Context mContext;
+    private static final String SERVER_URL = "http://45.32.105.30:3000"; // Dùng IP VPS chung cho cả máy thật và máy ảo
+
+    private SocketManager() {
+        try {
+            mSocket = IO.socket(SERVER_URL);
+        } catch (URISyntaxException e) {
+            Log.e("SocketManager", "Lỗi cú pháp URL", e);
+        }
+    }
+
+    public static synchronized SocketManager getInstance() {
+        if (instance == null) {
+            instance = new SocketManager();
+        }
+        return instance;
+    }
+
+    public Socket getSocket() {
+        return mSocket;
+    }
+
+    public void init(android.content.Context context) {
+        this.mContext = context.getApplicationContext();
+        if (mSocket != null) {
+            // Lắng nghe tin nhắn mới ở mọi nơi trong App
+            mSocket.off("receive_message", globalMessageListener);
+            mSocket.on("receive_message", globalMessageListener);
+        }
+    }
+
+    private Emitter.Listener globalMessageListener = args -> {
+        try {
+            org.json.JSONObject data = (org.json.JSONObject) args[0];
+            String senderId = data.getString("sender_id");
+            String messageText = data.getString("message_text");
+            
+            // Đừng hiện thông báo nếu đang chat trực tiếp với người đó
+            if (senderId.equals(com.example.musicappdemo.ui.ChatActivity.currentChatFriendId)) {
+                return;
+            }
+            
+            if (mContext != null) {
+                com.example.musicappdemo.utils.NotificationUtils.showChatNotification(mContext, senderId, messageText);
+            }
+        } catch (Exception e) {}
+    };
+
+    public void connect(String userId) {
+        if (!mSocket.connected()) {
+            mSocket.connect();
+        }
+        // Emit luôn sau khi connect
+        mSocket.on(Socket.EVENT_CONNECT, args -> {
+            Log.d("SocketManager", "Connected to server!");
+            if (userId != null && !userId.isEmpty()) {
+                mSocket.emit("user_connected", userId);
+            }
+        });
+    }
+
+    public void emitPlayingSong(String userId, String songTitle) {
+        if (mSocket.connected() && userId != null) {
+            try {
+                org.json.JSONObject data = new org.json.JSONObject();
+                data.put("userId", userId);
+                data.put("songTitle", songTitle);
+                mSocket.emit("playing_song", data);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void disconnect() {
+        if (mSocket.connected()) {
+            mSocket.disconnect();
+        }
+    }
+}

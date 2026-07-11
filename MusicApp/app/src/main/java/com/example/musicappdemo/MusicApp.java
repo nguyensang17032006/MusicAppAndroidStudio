@@ -12,5 +12,6 @@ public class MusicApp extends Application {
         super.onCreate();
 
         SessionManager.get(this);
+        com.example.musicappdemo.data.SocketManager.getInstance().init(this);
     }
 }

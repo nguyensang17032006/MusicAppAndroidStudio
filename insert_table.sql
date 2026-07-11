@@ -104,4 +104,4 @@ INSERT INTO song_genres (song_id, genre_id) VALUES
 
 
 
-select * from users
+select * from interaction_logs

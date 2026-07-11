@@ -80,7 +80,7 @@
         android:layout_marginTop="24dp"
         android:paddingStart="0dp"
         android:paddingEnd="0dp"
-        android:progress="45"
+        android:progress="0"
         android:progressTint="@color/P60"
         android:thumbTint="@color/P60"
         app:layout_constraintTop_toBottomOf="@+id/song_info_container" />
@@ -96,7 +96,7 @@
             android:id="@+id/tv_current_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="12:45"
+            android:text="00:00"
             android:textColor="@color/S60"
             android:textSize="12sp" />
 
@@ -105,7 +105,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:text="28:30"
+            android:text="00:00"
             android:textColor="@color/S60"
             android:textSize="12sp" />
     </RelativeLayout>
