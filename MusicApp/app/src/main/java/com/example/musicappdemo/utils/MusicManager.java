@@ -28,6 +28,7 @@ public class MusicManager {
 
     private boolean isShuffle = false;
     private boolean isRepeat = false;
+    private boolean isPrepared = false;
 
     public interface OnMusicStatusListener {
         void onSongChanged(Song song);
@@ -141,9 +142,11 @@ public class MusicManager {
             // Start Foreground Service to keep app alive in background
             startMusicService(context);
             
-            mediaPlayer.setDataSource(context, Uri.parse(currentSong.getFile_url()));
+            isPrepared = false;
+            mediaPlayer.setDataSource(currentSong.getFile_url());
             mediaPlayer.prepareAsync();
             mediaPlayer.setOnPreparedListener(mp -> {
+                isPrepared = true;
                 mp.start();
                 if (listener != null) {
                     listener.onSongChanged(currentSong);
@@ -243,6 +246,7 @@ public class MusicManager {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+        isPrepared = false;
         currentSong = null;
         currentIndex = -1;
         playlist.clear();
@@ -281,19 +285,46 @@ public class MusicManager {
     }
 
     public Song getCurrentSong() { return currentSong; }
-    public boolean isPlaying() { return mediaPlayer != null && mediaPlayer.isPlaying(); }
+    public boolean isPlaying() {
+        if (mediaPlayer != null) {
+            try {
+                return mediaPlayer.isPlaying();
+            } catch (IllegalStateException e) {
+                return false;
+            }
+        }
+        return false;
+    }
 
     public int getCurrentPosition() {
-        if (mediaPlayer != null) return mediaPlayer.getCurrentPosition();
+        if (mediaPlayer != null && isPrepared) {
+            try {
+                return mediaPlayer.getCurrentPosition();
+            } catch (IllegalStateException e) {
+                return 0;
+            }
+        }
         return 0;
     }
 
     public int getDuration() {
-        if (mediaPlayer != null) return mediaPlayer.getDuration();
+        if (mediaPlayer != null && isPrepared) {
+            try {
+                return mediaPlayer.getDuration();
+            } catch (IllegalStateException e) {
+                return 0;
+            }
+        }
         return 0;
     }
 
     public void seekTo(int position) {
-        if (mediaPlayer != null) mediaPlayer.seekTo(position);
+        if (mediaPlayer != null) {
+            try {
+                mediaPlayer.seekTo(position);
+            } catch (IllegalStateException e) {
+                Log.e("MusicManager", "seekTo error: " + e.getMessage());
+            }
+        }
     }
 }

@@ -7,8 +7,80 @@ const db = require('./config/db');
 const cloudinaryConfig = require('./config/cloudinary');
 const supabase = require('./config/supabase');
 
+const http = require('http');
+const { Server } = require('socket.io');
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
+
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: { origin: '*' }
+});
+
+const connectedUsers = {};
+
+io.on('connection', (socket) => {
+    socket.on('user_connected', (userId) => {
+        if (!userId) return;
+        connectedUsers[userId] = {
+            socketId: socket.id,
+            isOnline: true,
+            currentSong: null
+        };
+        io.emit('friend_status_changed', { userId, isOnline: true, currentSong: null });
+    });
+
+    socket.on('playing_song', (data) => {
+        const { userId, songTitle } = data;
+        if (userId && connectedUsers[userId]) {
+            connectedUsers[userId].currentSong = songTitle;
+            io.emit('friend_status_changed', { userId, isOnline: true, currentSong: songTitle });
+        }
+    });
+
+    socket.on('send_message', async (data) => {
+        const { senderId, receiverId, message } = data;
+        if (!senderId || !receiverId || !message) return;
+        
+        try {
+            // Lưu vào Supabase
+            const { data: insertedData, error } = await supabase
+                .from('messages')
+                .insert([
+                    { sender_id: senderId, receiver_id: receiverId, message_text: message }
+                ])
+                .select();
+                
+            if (error) throw error;
+            
+            const newMessage = insertedData[0];
+            
+            // Gửi cho người nhận nếu họ đang online
+            if (connectedUsers[receiverId]) {
+                io.to(connectedUsers[receiverId].socketId).emit('receive_message', newMessage);
+            }
+        } catch (error) {
+            console.error("Lỗi khi lưu tin nhắn vào Supabase:", error);
+        }
+    });
+
+    socket.on('disconnect', () => {
+        for (const [userId, info] of Object.entries(connectedUsers)) {
+            if (info.socketId === socket.id) {
+                delete connectedUsers[userId];
+                io.emit('friend_status_changed', { userId, isOnline: false, currentSong: null });
+                break;
+            }
+        }
+    });
+});
+
+app.use((req, res, next) => {
+    req.io = io;
+    req.connectedUsers = connectedUsers;
+    next();
+});
 
 app.use(cors());
 app.use(express.json());
@@ -24,6 +96,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const statsRoutes = require('./routes/statsRoutes');
 const libraryRoutes = require('./routes/libraryRoutes');
 const streakRoutes = require('./routes/streakRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 const { startStreakCron } = require('./utils/streakCron');
 
 // Run table creation check on startup
@@ -42,6 +115,8 @@ db.query(`
     console.error("Error creating table 'user_streaks':", err.message);
 });
 
+
+
 // Start streak cron job
 startStreakCron();
 
@@ -54,6 +129,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/streak', streakRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.use((err, req, res, next) => {
     if (err) {
@@ -62,6 +138,6 @@ app.use((err, req, res, next) => {
     next();
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

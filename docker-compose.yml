@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # Dịch vụ 1: Database MySQL
+  mysql_db:
+    image: mysql:8.0
+    container_name: music_app_mysql
+    restart: unless-stopped
+    environment:
+      # Cấu hình biến môi trường, có fallback values
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-music_password}
+      MYSQL_DATABASE: ${DB_NAME:-musicapp}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Ánh xạ file SQL từ Backend để khởi tạo dữ liệu
+      - ./MusicAppBackend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - music_app_network
+
+  # Dịch vụ 2: Backend Node.js
+  backend:
+    build: ./MusicAppBackend
+    container_name: music_app_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=mysql_db
+      - DB_USER=${DB_USER:-music_user}
+      - DB_PASSWORD=${DB_PASSWORD:-music_password}
+      - DB_NAME=${DB_NAME:-musicapp}
+      - PORT=3000
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+    depends_on:
+      - mysql_db
+    networks:
+      - music_app_network
+
+  # Dịch vụ 3: Web App Admin (Frontend)
+  admin_frontend:
+    build:
+      context: ./MusicAdmin/my-app
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    container_name: music_app_admin
+    restart: unless-stopped
+    ports:
+      # Ánh xạ port 8080 của máy host vào port 80 của Nginx trong container
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - music_app_network
+
+# Định nghĩa Volume lưu dữ liệu MySQL
+volumes:
+  mysql_data:
+
+# Định nghĩa mạng nội bộ
+networks:
+  music_app_network:
+    driver: bridge
