@@ -273,14 +273,29 @@ const acceptFriendViaLink = async (req, res) => {
         const id1 = inviterId < receiverId ? inviterId : receiverId;
         const id2 = inviterId > receiverId ? inviterId : receiverId;
 
+        // 1. Kiểm tra xem đã kết bạn chưa
+        const { data: existing, error: err1 } = await supabase
+            .from('friendships')
+            .select('*')
+            .eq('user_id_1', id1)
+            .eq('user_id_2', id2);
+
+        if (err1) {
+            return res.status(400).json({ success: false, message: err1.message });
+        }
+
+        if (existing && existing.length > 0) {
+            return res.status(400).json({ success: false, message: "Hai người đã là bạn bè rồi!" });
+        }
+
+        // 2. Nếu chưa thì Insert
         const { data, error } = await supabase
             .from('friendships')
-            .upsert({
+            .insert({
                 user_id_1: id1,
                 user_id_2: id2,
                 status: 'accepted'
-            }, { onConflict: 'user_id_1, user_id_2' })
-            .select();
+            });
 
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
@@ -294,7 +309,7 @@ const acceptFriendViaLink = async (req, res) => {
 
 const getFriendsList = async (req, res) => {
     const { userId } = req.params;
-    
+
     try {
         // 1. Lấy danh sách ID bạn bè từ Supabase
         const { data: friendships, error } = await supabase
@@ -302,18 +317,18 @@ const getFriendsList = async (req, res) => {
             .select('*')
             .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`)
             .eq('status', 'accepted');
-            
+
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         }
-        
+
         if (!friendships || friendships.length === 0) {
             return res.status(200).json({ success: true, data: [] });
         }
-        
+
         // 2. Lọc ra mảng friend IDs
         const friendIds = friendships.map(f => f.user_id_1 === userId ? f.user_id_2 : f.user_id_1);
-        
+
         // 3. Truy vấn MySQL lấy email, avatar và streak
         const placeholders = friendIds.map(() => '?').join(',');
         const query = `
@@ -322,9 +337,9 @@ const getFriendsList = async (req, res) => {
             LEFT JOIN user_streaks s ON u.id = s.user_id
             WHERE u.id IN (${placeholders})
         `;
-        
+
         const [rows] = await db.query(query, friendIds);
-        
+
         return res.status(200).json({ success: true, data: rows });
     } catch (err) {
         return res.status(500).json({ success: false, message: err.message });

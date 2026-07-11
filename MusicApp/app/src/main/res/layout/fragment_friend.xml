@@ -23,7 +23,7 @@
         android:id="@+id/btn_copy_link"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="+ Mời bạn"
+        android:text="Sao chép ID"
         android:textColor="@color/white"
         android:textSize="14sp"
         app:backgroundTint="@color/P10"
@@ -31,6 +31,38 @@
         app:layout_constraintBottom_toBottomOf="@+id/tv_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/tv_title" />
+
+    <LinearLayout
+        android:id="@+id/ll_add_friend"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/tv_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <EditText
+            android:id="@+id/et_friend_id"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@color/white"
+            android:hint="Nhập ID bạn bè"
+            android:textColorHint="@color/P40"
+            android:textColor="@color/white"
+            android:padding="12dp"
+            android:textSize="14sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_add_friend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Tìm"
+            app:backgroundTint="@color/P10"
+            app:cornerRadius="8dp" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_friends"
@@ -40,7 +72,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_title"
+        app:layout_constraintTop_toBottomOf="@+id/ll_add_friend"
         tools:listitem="@layout/item_friend" />
 
     <ProgressBar

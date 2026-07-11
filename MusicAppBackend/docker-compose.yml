@@ -15,8 +15,8 @@ services:
     volumes:
       # Ánh xạ thư mục máy chủ vào container để dữ liệu không bị mất khi container tắt
       - mysql_data:/var/lib/mysql
-      # Nếu bạn có file init.sql (tạo bảng ban đầu), hãy bỏ comment 2 dòng dưới và bỏ file init.sql vào thư mục gốc
-      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      # Bỏ comment để tự động nạp dữ liệu:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - music_app_network
 

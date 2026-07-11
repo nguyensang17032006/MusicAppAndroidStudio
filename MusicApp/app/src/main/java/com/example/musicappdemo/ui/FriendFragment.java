@@ -51,16 +51,70 @@ public class FriendFragment extends Fragment {
         binding.btnCopyLink.setOnClickListener(v -> {
             String userId = SessionManager.get(requireContext()).getUserId();
             if (userId != null && !userId.isEmpty()) {
-                String link = "https://musicappdemo.com/friend?inviterId=" + userId;
-                
                 ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Friend Link", link);
+                ClipData clip = ClipData.newPlainText("Friend ID", userId);
                 clipboard.setPrimaryClip(clip);
                 
-                Toast.makeText(requireContext(), "Đã sao chép link kết bạn!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Đã sao chép ID của bạn!", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(requireContext(), "Lỗi: Không tìm thấy ID người dùng.", Toast.LENGTH_SHORT).show();
             }
+        });
+
+        binding.btnAddFriend.setOnClickListener(v -> {
+            String friendId = binding.etFriendId.getText().toString().trim();
+            if (friendId.isEmpty()) {
+                Toast.makeText(requireContext(), "Vui lòng nhập ID bạn bè", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            String myUserId = SessionManager.get(requireContext()).getUserId();
+            if (myUserId == null || myUserId.isEmpty()) return;
+
+            RetrofitClient.getApiService().getUserProfile(friendId).enqueue(new Callback<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>>() {
+                @Override
+                public void onResponse(Call<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>> call, Response<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                        String email = response.body().getData().getEmail();
+                        
+                        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                            .setTitle("Tìm thấy bạn bè")
+                            .setMessage("Bạn có muốn kết bạn với người dùng: " + email + "?")
+                            .setPositiveButton("Kết bạn", (dialog, which) -> {
+                                java.util.Map<String, String> body = new java.util.HashMap<>();
+                                body.put("inviterId", friendId);
+                                body.put("receiverId", myUserId);
+
+                                RetrofitClient.getApiService().acceptFriendViaLink(body).enqueue(new Callback<SimpleResponse<Void>>() {
+                                    @Override
+                                    public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response2) {
+                                        if (response2.isSuccessful() && response2.body() != null && response2.body().isSuccess()) {
+                                            Toast.makeText(requireContext(), "Kết bạn thành công!", Toast.LENGTH_SHORT).show();
+                                            binding.etFriendId.setText("");
+                                            loadFriends();
+                                        } else {
+                                            Toast.makeText(requireContext(), "Lỗi: ID không hợp lệ hoặc đã là bạn bè.", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {
+                                        Toast.makeText(requireContext(), "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            })
+                            .setNegativeButton("Hủy", null)
+                            .show();
+                    } else {
+                        Toast.makeText(requireContext(), "Không tìm thấy người dùng với ID này.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<SimpleResponse<com.example.musicappdemo.model.auth.SupabaseUser>> call, Throwable t) {
+                    Toast.makeText(requireContext(), "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
     }
 
