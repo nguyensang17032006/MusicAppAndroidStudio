@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
@@ -20,6 +21,7 @@ import com.example.musicappdemo.data.RetrofitClient;
 import com.example.musicappdemo.data.SimpleResponse;
 import com.example.musicappdemo.databinding.ActivityPlaylistDetailBinding;
 import com.example.musicappdemo.model.Song;
+import com.example.musicappdemo.utils.LibraryManager;
 import com.example.musicappdemo.utils.MusicManager;
 
 import java.io.File;
@@ -40,11 +42,14 @@ import retrofit2.Response;
 import android.os.Handler;
 
 public class PlaylistDetailActivity extends AppCompatActivity implements MusicManager.OnMusicStatusListener {
+public class PlaylistDetailActivity extends AppCompatActivity implements MusicManager.OnMusicStatusListener {
 
     private ActivityPlaylistDetailBinding binding;
     private List<Song> songList = new ArrayList<>();
     private String playlistId;
-    
+
+    private Handler progressHandler = new Handler();
+    private Runnable progressRunnable;
     private Handler progressHandler = new Handler();
     private Runnable progressRunnable;
 
@@ -74,7 +79,13 @@ public class PlaylistDetailActivity extends AppCompatActivity implements MusicMa
         if (title != null) binding.tvPlaylistTitle.setText(title);
         if (songs != null) songList.addAll(songs);
 
-        if (coverUrl != null && !coverUrl.isEmpty()) {
+        // Xử lý riêng cho Liked Songs: Không cho đổi ảnh, dùng icon mặc định
+        if (title != null && title.equalsIgnoreCase("Liked Songs")) {
+            binding.btnChangeCover.setVisibility(android.view.View.GONE);
+            binding.ivPlaylistCover.setImageResource(R.drawable.ic_music_note);
+            binding.ivPlaylistCover.setBackgroundResource(R.color.S20);
+            binding.ivPlaylistCover.setPadding(60, 60, 60, 60); // Padding lớn cho icon nốt nhạc
+        } else if (coverUrl != null && !coverUrl.isEmpty()) {
             Glide.with(this)
                     .load(RetrofitClient.getFullUrl(coverUrl))
                     .placeholder(R.drawable.ic_music_note)
@@ -92,7 +103,6 @@ public class PlaylistDetailActivity extends AppCompatActivity implements MusicMa
         binding.fabPlayAll.setOnClickListener(v -> {
             if (!songList.isEmpty()) {
                 MusicManager.getInstance().playPlaylist(this, songList, 0);
-                Toast.makeText(this, "Đang phát tất cả bài hát", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Playlist trống", Toast.LENGTH_SHORT).show();
             }
@@ -112,6 +122,95 @@ public class PlaylistDetailActivity extends AppCompatActivity implements MusicMa
 
         setupProgressUpdate();
         setupRecyclerView();
+        setupMiniPlayer();
+
+        LibraryManager.getInstance(this).setSyncListener(() -> {
+            runOnUiThread(() -> {
+                // Refresh list from manager
+                List<com.example.musicappdemo.model.Playlist> playlists = LibraryManager.getInstance(this).getPlaylists();
+                for (com.example.musicappdemo.model.Playlist p : playlists) {
+                    if (p.getId().equals(playlistId)) {
+                        songList.clear();
+                        songList.addAll(p.getSongs());
+                        if (binding.rvPlaylistSongs.getAdapter() != null) {
+                            binding.rvPlaylistSongs.getAdapter().notifyDataSetChanged();
+                        }
+                        break;
+                    }
+                }
+            });
+        });
+    }
+
+    private void setupMiniPlayer() {
+        MusicManager.getInstance().setListener(this);
+        updateMiniPlayerUI();
+
+        binding.miniPlayer.miniPlayerContainer.setOnClickListener(v -> {
+            startActivity(new Intent(this, com.example.musicappdemo.PlayerActivity.class));
+        });
+
+        binding.miniPlayer.miniPlayerPlay.setOnClickListener(v -> MusicManager.getInstance().togglePause());
+
+        binding.miniPlayer.miniPlayerClose.setOnClickListener(v -> {
+            MusicManager.getInstance().stopMusic();
+            updateMiniPlayerUI();
+        });
+
+        progressRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (MusicManager.getInstance().isPlaying()) {
+                    int currentPosition = MusicManager.getInstance().getCurrentPosition();
+                    int duration = MusicManager.getInstance().getDuration();
+                    if (duration > 0) {
+                        binding.miniPlayer.miniPlayerProgress.setMax(duration);
+                        binding.miniPlayer.miniPlayerProgress.setProgress(currentPosition);
+                    }
+                }
+                progressHandler.postDelayed(this, 1000);
+            }
+        };
+        progressHandler.post(progressRunnable);
+    }
+
+    private void updateMiniPlayerUI() {
+        Song current = MusicManager.getInstance().getCurrentSong();
+        if (current != null) {
+            binding.miniPlayer.miniPlayerContainer.setVisibility(android.view.View.VISIBLE);
+            binding.miniPlayer.miniPlayerTitle.setText(current.getTitle());
+            String artistName = (current.getArtists() != null && !current.getArtists().isEmpty()) ? current.getArtists().get(0).getName() : "Unknown Artist";
+            binding.miniPlayer.miniPlayerArtist.setText(artistName);
+            Glide.with(this).load(RetrofitClient.getFullUrl(current.getCover_url()))
+                    .placeholder(R.drawable.placeholder_img)
+                    .into(binding.miniPlayer.miniPlayerImg);
+            binding.miniPlayer.miniPlayerPlay.setImageResource(MusicManager.getInstance().isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play);
+        } else {
+            binding.miniPlayer.miniPlayerContainer.setVisibility(android.view.View.GONE);
+        }
+    }
+
+    @Override
+    public void onSongChanged(Song song) {
+        updateMiniPlayerUI();
+    }
+
+    @Override
+    public void onStatusChanged(boolean isPlaying) {
+        binding.miniPlayer.miniPlayerPlay.setImageResource(isPlaying ? R.drawable.ic_pause : R.drawable.ic_play);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MusicManager.getInstance().setListener(this);
+        updateMiniPlayerUI();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        progressHandler.removeCallbacks(progressRunnable);
     }
 
     private void setupProgressUpdate() {
@@ -268,7 +367,7 @@ public class PlaylistDetailActivity extends AppCompatActivity implements MusicMa
     }
 
     private void setupRecyclerView() {
-        SearchResultAdapter adapter = new SearchResultAdapter(this, songList);
+        SearchResultAdapter adapter = new SearchResultAdapter(this, songList, playlistId);
         binding.rvPlaylistSongs.setLayoutManager(new LinearLayoutManager(this));
         binding.rvPlaylistSongs.setAdapter(adapter);
     }

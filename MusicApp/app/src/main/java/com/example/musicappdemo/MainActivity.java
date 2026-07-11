@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.example.musicappdemo.data.RetrofitClient;
 import com.example.musicappdemo.databinding.ActivityMainBinding;
 import com.example.musicappdemo.model.Song;
 import com.example.musicappdemo.ui.HomeFragment;
@@ -86,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
         });
 
         // Xử lý khi click vào Mini Player
+        binding.miniPlayer.miniPlayerContainer.setOnClickListener(v -> {
         binding.miniPlayer.getRoot().setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, PlayerActivity.class));
         });
@@ -98,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
         });
 
         setupProgressUpdate();
-        
+
         handleDeepLinkIntent(getIntent());
     }
 
@@ -186,8 +188,10 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
 
     private void updateMiniPlayerVisibility() {
         if (MusicManager.getInstance().getCurrentSong() != null) {
+            binding.miniPlayer.miniPlayerContainer.setVisibility(android.view.View.VISIBLE);
             binding.miniPlayer.getRoot().setVisibility(android.view.View.VISIBLE);
         } else {
+            binding.miniPlayer.miniPlayerContainer.setVisibility(android.view.View.GONE);
             binding.miniPlayer.getRoot().setVisibility(android.view.View.GONE);
         }
     }
@@ -205,6 +209,7 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
             binding.miniPlayer.miniPlayerArtist.setText(artistName);
             if (song.getCover_url() != null && !song.getCover_url().isEmpty()) {
                 Glide.with(this).load(song.getCover_url()).into(binding.miniPlayer.miniPlayerImg);
+                Glide.with(this).load(RetrofitClient.getFullUrl(song.getCover_url())).into(binding.miniPlayer.miniPlayerImg);
             } else {
                 binding.miniPlayer.miniPlayerImg.setImageResource(R.drawable.placeholder_img);
             }

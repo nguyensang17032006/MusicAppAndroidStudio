@@ -1,6 +1,8 @@
 package com.example.musicappdemo.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,8 +11,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.bumptech.glide.Glide;
 import com.example.musicappdemo.R;
 import com.example.musicappdemo.adapter.SearchResultAdapter;
+import com.example.musicappdemo.data.RetrofitClient;
+import com.example.musicappdemo.data.SimpleResponse;
 import com.example.musicappdemo.databinding.ActivityArtistDetailBinding;
 import com.example.musicappdemo.model.Song;
+import com.example.musicappdemo.utils.MusicManager;
 import com.example.musicappdemo.data.SimpleResponse;
 import com.example.musicappdemo.data.RetrofitClient;
 
@@ -22,12 +27,15 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ArtistDetailActivity extends AppCompatActivity implements com.example.musicappdemo.utils.MusicManager.OnMusicStatusListener {
+public class ArtistDetailActivity extends AppCompatActivity implements MusicManager.OnMusicStatusListener {
 
     private ActivityArtistDetailBinding binding;
     private SearchResultAdapter adapter;
     private List<Song> artistSongs = new ArrayList<>();
     private String artistName;
     private String artistAvatar;
+    private Handler progressHandler = new Handler();
+    private Runnable progressRunnable;
 
     private android.os.Handler progressHandler = new android.os.Handler();
     private Runnable progressRunnable;
@@ -59,7 +67,6 @@ public class ArtistDetailActivity extends AppCompatActivity implements com.examp
         binding.fabPlayArtist.setOnClickListener(v -> {
             if (!artistSongs.isEmpty()) {
                 com.example.musicappdemo.utils.MusicManager.getInstance().playPlaylist(this, artistSongs, 0);
-                Toast.makeText(this, "Đang phát nhạc của " + artistName, Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Nghệ sĩ chưa có bài hát nào", Toast.LENGTH_SHORT).show();
             }
@@ -80,7 +87,79 @@ public class ArtistDetailActivity extends AppCompatActivity implements com.examp
         setupProgressUpdate();
 
         setupRecyclerView();
+        setupMiniPlayer();
         fetchSongs();
+    }
+
+    private void setupMiniPlayer() {
+        MusicManager.getInstance().setListener(this);
+        updateMiniPlayerUI();
+
+        binding.miniPlayer.miniPlayerContainer.setOnClickListener(v -> {
+            startActivity(new Intent(this, com.example.musicappdemo.PlayerActivity.class));
+        });
+
+        binding.miniPlayer.miniPlayerPlay.setOnClickListener(v -> MusicManager.getInstance().togglePause());
+
+        binding.miniPlayer.miniPlayerClose.setOnClickListener(v -> {
+            MusicManager.getInstance().stopMusic();
+            updateMiniPlayerUI();
+        });
+
+        progressRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (MusicManager.getInstance().isPlaying()) {
+                    int currentPosition = MusicManager.getInstance().getCurrentPosition();
+                    int duration = MusicManager.getInstance().getDuration();
+                    if (duration > 0) {
+                        binding.miniPlayer.miniPlayerProgress.setMax(duration);
+                        binding.miniPlayer.miniPlayerProgress.setProgress(currentPosition);
+                    }
+                }
+                progressHandler.postDelayed(this, 1000);
+            }
+        };
+        progressHandler.post(progressRunnable);
+    }
+
+    private void updateMiniPlayerUI() {
+        Song current = MusicManager.getInstance().getCurrentSong();
+        if (current != null) {
+            binding.miniPlayer.miniPlayerContainer.setVisibility(android.view.View.VISIBLE);
+            binding.miniPlayer.miniPlayerTitle.setText(current.getTitle());
+            String artistName = (current.getArtists() != null && !current.getArtists().isEmpty()) ? current.getArtists().get(0).getName() : "Unknown Artist";
+            binding.miniPlayer.miniPlayerArtist.setText(artistName);
+            Glide.with(this).load(RetrofitClient.getFullUrl(current.getCover_url()))
+                    .placeholder(R.drawable.placeholder_img)
+                    .into(binding.miniPlayer.miniPlayerImg);
+            binding.miniPlayer.miniPlayerPlay.setImageResource(MusicManager.getInstance().isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play);
+        } else {
+            binding.miniPlayer.miniPlayerContainer.setVisibility(android.view.View.GONE);
+        }
+    }
+
+    @Override
+    public void onSongChanged(Song song) {
+        updateMiniPlayerUI();
+    }
+
+    @Override
+    public void onStatusChanged(boolean isPlaying) {
+        binding.miniPlayer.miniPlayerPlay.setImageResource(isPlaying ? R.drawable.ic_pause : R.drawable.ic_play);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MusicManager.getInstance().setListener(this);
+        updateMiniPlayerUI();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        progressHandler.removeCallbacks(progressRunnable);
     }
 
     private void setupRecyclerView() {

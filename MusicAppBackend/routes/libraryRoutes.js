@@ -10,6 +10,7 @@ router.post('/liked-songs/toggle', libraryController.toggleLikeSong);
 router.get('/playlists/:userId', libraryController.getUserPlaylists);
 router.post('/playlists/create', libraryController.createPlaylist);
 router.post('/playlists/add-song', libraryController.addSongToPlaylist);
+router.post('/playlists/remove-song', libraryController.removeSongFromPlaylist);
 router.post('/playlists/delete', libraryController.deletePlaylist);
 router.post('/playlists/update-cover', libraryController.updatePlaylistCover);
 

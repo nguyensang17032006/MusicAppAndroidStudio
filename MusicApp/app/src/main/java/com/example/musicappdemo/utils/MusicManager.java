@@ -82,11 +82,47 @@ public class MusicManager {
     }
 
     public void addSongToPlaylist(Context context, Song song) {
+        // Kiểm tra xem đã có trong queue chưa
+        for (Song s : playlist) {
+            if (s.getId().equals(song.getId())) return;
+        }
         originalPlaylist.add(song);
         playlist.add(song);
         if (playlist.size() == 1) {
             currentIndex = 0;
             playCurrentIndex(context);
+        }
+    }
+
+    public void removeSongFromQueue(String songId) {
+        int indexToRemove = -1;
+        for (int i = 0; i < playlist.size(); i++) {
+            if (playlist.get(i).getId().equals(songId)) {
+                indexToRemove = i;
+                break;
+            }
+        }
+
+        if (indexToRemove != -1) {
+            playlist.remove(indexToRemove);
+            originalPlaylist.removeIf(s -> s.getId().equals(songId));
+            
+            if (currentIndex == indexToRemove) {
+                if (playlist.isEmpty()) {
+                    stopMusic();
+                } else {
+                    currentIndex = currentIndex % playlist.size();
+                    playCurrentIndex(null); // Phát bài tiếp theo (context null vì đã prepared?)
+                    // Lưu ý: Cần context thực tế nếu dùng mediaPlayer.setDataSource
+                }
+            } else if (currentIndex > indexToRemove) {
+                currentIndex--;
+            }
+            
+            if (listener != null && !playlist.isEmpty()) {
+                // Trigger update
+                listener.onSongChanged(currentSong);
+            }
         }
     }
 

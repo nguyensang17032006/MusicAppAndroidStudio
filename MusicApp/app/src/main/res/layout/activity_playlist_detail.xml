@@ -105,6 +105,12 @@
         android:layout_weight="1"
         android:padding="16dp" />
 
+    <include
+        android:id="@+id/mini_player"
+        layout="@layout/layout_mini_player"
+        android:layout_width="match_parent"
+        android:layout_height="64dp" />
+
     <include android:id="@+id/miniPlayer" layout="@layout/mini_player" />
 
 </LinearLayout>
