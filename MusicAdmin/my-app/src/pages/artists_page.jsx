@@ -5,7 +5,8 @@ import ArtistForm from "../components/artists/artist_form.jsx";
 import ArtistTable from "../components/artists/artist_table.jsx";
 
 // Backend API URL Base
-const API_URL = 'http://localhost:3000/api/artists';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = `${API_BASE}/api/artists`;
 
 // Helper to generate next ID
 const generateArtistId = (artistsList) => {

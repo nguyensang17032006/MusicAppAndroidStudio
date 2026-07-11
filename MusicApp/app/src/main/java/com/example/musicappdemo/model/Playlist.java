@@ -7,6 +7,7 @@ import java.util.List;
 public class Playlist implements Serializable {
     private String id;
     private String name;
+    private String cover_url;
     private List<Song> songs;
 
     public Playlist() {
@@ -23,6 +24,8 @@ public class Playlist implements Serializable {
     public void setId(String id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+    public String getCover_url() { return cover_url; }
+    public void setCover_url(String cover_url) { this.cover_url = cover_url; }
     public List<Song> getSongs() { return songs; }
     public void setSongs(List<Song> songs) { this.songs = songs; }
 

@@ -30,6 +30,22 @@ public class MusicService extends Service implements MusicManager.OnMusicStatusL
     public static final String ACTION_NEXT = "ACTION_NEXT";
     public static final String ACTION_PREV = "ACTION_PREV";
 
+    private final android.os.Handler streakHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private boolean isTracking = false;
+    private static final int TRACKING_INTERVAL_MS = 60000;
+
+    private final Runnable trackTimeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (MusicManager.getInstance().isPlaying()) {
+                sendTrackTimeRequest(60);
+                streakHandler.postDelayed(this, TRACKING_INTERVAL_MS);
+            } else {
+                isTracking = false;
+            }
+        }
+    };
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -60,7 +76,13 @@ public class MusicService extends Service implements MusicManager.OnMusicStatusL
         Song currentSong = MusicManager.getInstance().getCurrentSong();
         if (currentSong != null) {
             showNotification(currentSong, MusicManager.getInstance().isPlaying());
+            if (MusicManager.getInstance().isPlaying()) {
+                startTracking();
+            } else {
+                stopTracking();
+            }
         } else {
+            stopTracking();
             stopSelf();
         }
 
@@ -177,6 +199,7 @@ public class MusicService extends Service implements MusicManager.OnMusicStatusL
     @Override
     public void onDestroy() {
         super.onDestroy();
+        stopTracking();
         MusicManager.getInstance().setServiceListener(null);
         stopForeground(true);
     }
@@ -184,9 +207,15 @@ public class MusicService extends Service implements MusicManager.OnMusicStatusL
     @Override
     public void onSongChanged(Song song) {
         if (song == null) {
+            stopTracking();
             stopSelf();
         } else {
             showNotification(song, MusicManager.getInstance().isPlaying());
+            if (MusicManager.getInstance().isPlaying()) {
+                startTracking();
+            } else {
+                stopTracking();
+            }
         }
     }
 
@@ -196,6 +225,55 @@ public class MusicService extends Service implements MusicManager.OnMusicStatusL
         if (currentSong != null) {
             showNotification(currentSong, isPlaying);
         }
+        if (isPlaying) {
+            startTracking();
+        } else {
+            stopTracking();
+        }
+    }
+
+    private void startTracking() {
+        if (!isTracking) {
+            String userId = com.example.musicappdemo.data.SessionManager.get(getApplicationContext()).getUserId();
+            if (userId != null) {
+                isTracking = true;
+                streakHandler.postDelayed(trackTimeRunnable, TRACKING_INTERVAL_MS);
+            }
+        }
+    }
+
+    private void stopTracking() {
+        if (isTracking) {
+            streakHandler.removeCallbacks(trackTimeRunnable);
+            isTracking = false;
+        }
+    }
+
+    private void sendTrackTimeRequest(int seconds) {
+        String userId = com.example.musicappdemo.data.SessionManager.get(getApplicationContext()).getUserId();
+        if (userId == null) return;
+
+        java.util.Map<String, Object> body = new java.util.HashMap<>();
+        body.put("userId", userId);
+        body.put("seconds", seconds);
+
+        com.example.musicappdemo.data.RetrofitClient.getApiService().trackStreakTime(body)
+                .enqueue(new retrofit2.Callback<com.example.musicappdemo.data.SimpleResponse<com.example.musicappdemo.model.UserStreak>>() {
+            @Override
+            public void onResponse(retrofit2.Call<com.example.musicappdemo.data.SimpleResponse<com.example.musicappdemo.model.UserStreak>> call, 
+                                   retrofit2.Response<com.example.musicappdemo.data.SimpleResponse<com.example.musicappdemo.model.UserStreak>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    // Success, no trace log needed
+                } else {
+                    Log.e("MusicService", "Failed to track streak time: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<com.example.musicappdemo.data.SimpleResponse<com.example.musicappdemo.model.UserStreak>> call, Throwable t) {
+                Log.e("MusicService", "Error tracking streak time", t);
+            }
+        });
     }
 
     @Nullable

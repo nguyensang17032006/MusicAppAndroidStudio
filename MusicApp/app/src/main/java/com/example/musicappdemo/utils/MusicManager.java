@@ -8,12 +8,18 @@ import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
+import com.example.musicappdemo.data.RetrofitClient;
+import com.example.musicappdemo.data.SimpleResponse;
 import com.example.musicappdemo.model.Song;
 import com.example.musicappdemo.services.MusicService;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MusicManager {
     private static MusicManager instance;
@@ -28,6 +34,7 @@ public class MusicManager {
 
     private boolean isShuffle = false;
     private boolean isRepeat = false;
+    private boolean isPrepared = false;
 
     public interface OnMusicStatusListener {
         void onSongChanged(Song song);
@@ -141,9 +148,11 @@ public class MusicManager {
             // Start Foreground Service to keep app alive in background
             startMusicService(context);
             
-            mediaPlayer.setDataSource(context, Uri.parse(currentSong.getFile_url()));
+            isPrepared = false;
+            mediaPlayer.setDataSource(currentSong.getFile_url());
             mediaPlayer.prepareAsync();
             mediaPlayer.setOnPreparedListener(mp -> {
+                isPrepared = true;
                 mp.start();
                 if (listener != null) {
                     listener.onSongChanged(currentSong);
@@ -156,15 +165,24 @@ public class MusicManager {
             });
             mediaPlayer.setOnErrorListener((mp, what, extra) -> {
                 Log.e("MusicManager", "MediaPlayer Error: what=" + what + " extra=" + extra);
-                return false;
+                return true; // Handle error and prevent triggering onCompletion
             });
             mediaPlayer.setOnCompletionListener(mp -> {
+                // Tăng view khi nghe hết bài
+                if (currentSong != null) {
+                    incrementSongView(currentSong.getId());
+                try {
+                    int currentPos = mp.getCurrentPosition();
+                    int duration = mp.getDuration();
+                    if (currentPos < 2000 && duration > 5000) {
+                        return;
+                    }
+                } catch (Exception e) {
+                    Log.e("MusicManager", "Error checking duration in onCompletion: " + e.getMessage());
+                }
+
                 if (isRepeat && !isShuffle && playlist.size() == 1) {
                     playCurrentIndex(context); // Repeat single song
-                } else if (currentIndex == playlist.size() - 1 && !isRepeat) {
-                    // End of playlist
-                    if (listener != null) listener.onStatusChanged(false);
-                    if (serviceListener != null) serviceListener.onStatusChanged(false);
                 } else {
                     nextSong(context);
                 }
@@ -237,6 +255,7 @@ public class MusicManager {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+        isPrepared = false;
         currentSong = null;
         currentIndex = -1;
         playlist.clear();
@@ -275,19 +294,61 @@ public class MusicManager {
     }
 
     public Song getCurrentSong() { return currentSong; }
-    public boolean isPlaying() { return mediaPlayer != null && mediaPlayer.isPlaying(); }
+    public boolean isPlaying() {
+        if (mediaPlayer != null) {
+            try {
+                return mediaPlayer.isPlaying();
+            } catch (IllegalStateException e) {
+                return false;
+            }
+        }
+        return false;
+    }
 
     public int getCurrentPosition() {
-        if (mediaPlayer != null) return mediaPlayer.getCurrentPosition();
+        if (mediaPlayer != null && isPrepared) {
+            try {
+                return mediaPlayer.getCurrentPosition();
+            } catch (IllegalStateException e) {
+                return 0;
+            }
+        }
         return 0;
     }
 
     public int getDuration() {
-        if (mediaPlayer != null) return mediaPlayer.getDuration();
+        if (mediaPlayer != null && isPrepared) {
+            try {
+                return mediaPlayer.getDuration();
+            } catch (IllegalStateException e) {
+                return 0;
+            }
+        }
         return 0;
     }
 
     public void seekTo(int position) {
-        if (mediaPlayer != null) mediaPlayer.seekTo(position);
+        if (mediaPlayer != null) {
+            try {
+                mediaPlayer.seekTo(position);
+            } catch (IllegalStateException e) {
+                Log.e("MusicManager", "seekTo error: " + e.getMessage());
+            }
+        }
+    }
+
+    private void incrementSongView(String songId) {
+        RetrofitClient.getApiService().incrementView(songId).enqueue(new Callback<SimpleResponse<Void>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    Log.d("MusicManager", "View incremented for song: " + songId);
+                }
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {
+                Log.e("MusicManager", "Failed to increment view: " + t.getMessage());
+            }
+        });
     }
 }

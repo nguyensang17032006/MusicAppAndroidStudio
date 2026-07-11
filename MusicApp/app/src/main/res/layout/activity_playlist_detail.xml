@@ -19,17 +19,78 @@
             android:src="@drawable/ic_arrow_down"
             android:rotation="90"
             app:tint="@color/white" />
+    </RelativeLayout>
 
-        <TextView
-            android:id="@+id/tvPlaylistTitle"
+    <!-- Header Info -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="24dp"
+        android:gravity="center_vertical">
+
+        <RelativeLayout
+            android:layout_width="120dp"
+            android:layout_height="120dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivPlaylistCover"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_music_note"
+                android:background="@color/S20"
+                android:padding="24dp"
+                app:shapeAppearanceOverlay="@style/RoundedCorners8" />
+
+            <ImageView
+                android:id="@+id/btnEditCover"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/ic_edit"
+                android:visibility="gone"
+                app:tint="@color/white" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="20dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvPlaylistTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Playlist Title"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnChangeCover"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Change"
+                android:textSize="12sp"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/S20"
+                app:cornerRadius="20dp" />
+        </LinearLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabPlayAll"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:text="Playlist Title"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-    </RelativeLayout>
+            android:src="@drawable/ic_play"
+            app:backgroundTint="@color/P60"
+            app:tint="@color/black"
+            app:fabSize="normal" />
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"

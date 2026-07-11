@@ -38,9 +38,10 @@ const SEED_SONGS = [
     }
 ];
 
-const API_SONGS_URL = 'http://localhost:3000/api/songs';
-const API_ARTISTS_URL = 'http://localhost:3000/api/artists';
-const API_GENRES_URL = 'http://localhost:3000/api/genres';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_SONGS_URL = `${API_BASE}/api/songs`;
+const API_ARTISTS_URL = `${API_BASE}/api/artists`;
+const API_GENRES_URL = `${API_BASE}/api/genres`;
 
 // Helper to generate next ID
 const generateSongId = (songsList) => {

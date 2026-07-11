@@ -55,10 +55,12 @@ const verifyAndRegister = async (req, res) => {
         console.log("✅ Xác thực OTP trên Supabase thành công! Chuẩn bị lưu vào MySQL...");
 
         // BƯỚC B: Lưu thông tin vào MySQL (Chỉ chạy 1 lần duy nhất)
-        const sql = `INSERT INTO users (id, email, gender) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE email=email`;
+        // Sinh mã kết bạn ngẫu nhiên 6 ký tự
+        const friendCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const sql = `INSERT INTO users (id, email, gender, friend_code) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE email=email`;
 
         try {
-            await db.query(sql, [supabaseUser.id, email, gender || null]);
+            await db.query(sql, [supabaseUser.id, email, gender || null, friendCode]);
             console.log("🚀 Đã lưu thông tin vào MySQL thành công!");
         } catch (dbErr) {
             console.error("❌ Lỗi thực thi MySQL:", dbErr.message);
@@ -109,9 +111,10 @@ const login = async (req, res) => {
 
         // ĐẢM BẢO USER TỒN TẠI TRONG MYSQL (UPSERT)
         // Nếu chưa có thì chèn mới, nếu có rồi thì giữ nguyên (hoặc cập nhật email)
-        const sql = `INSERT INTO users (id, email) VALUES (?, ?) ON DUPLICATE KEY UPDATE email=email`;
+        const friendCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const sql = `INSERT INTO users (id, email, friend_code) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE email=email`;
         try {
-            await db.query(sql, [supabaseUser.id, supabaseUser.email]);
+            await db.query(sql, [supabaseUser.id, supabaseUser.email, friendCode]);
         } catch (dbErr) {
             console.error("Lỗi cập nhật User vào MySQL khi login:", dbErr.message);
         }
@@ -142,11 +145,12 @@ const login = async (req, res) => {
 const getUserProfile = async (req, res) => {
     const { userId } = req.params;
     try {
-        const [rows] = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
+        // Tìm kiếm bằng ID thật (hiển thị profile của mình) HOẶC mã friend_code (tìm bạn bè)
+        const [rows] = await db.query('SELECT * FROM users WHERE id = ? OR friend_code = ?', [userId, userId]);
         if (rows.length > 0) {
             res.status(200).json({ success: true, data: rows[0] });
         } else {
-            res.status(404).json({ success: false, message: 'User not found' });
+            res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
         }
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -261,6 +265,136 @@ const updateNewPassword = async (req, res) => {
         return res.status(500).json({ success: false, message: err.message });
     }
 };
+
+const acceptFriendViaLink = async (req, res) => {
+    const { inviterId, receiverId } = req.body;
+
+    if (inviterId === receiverId) {
+        return res.status(400).json({ success: false, message: "Bạn không thể tự kết bạn với chính mình!" });
+    }
+
+    try {
+        const id1 = inviterId < receiverId ? inviterId : receiverId;
+        const id2 = inviterId > receiverId ? inviterId : receiverId;
+
+        // 1. Kiểm tra xem đã kết bạn chưa
+        const { data: existing, error: err1 } = await supabase
+            .from('friendships')
+            .select('*')
+            .eq('user_id_1', id1)
+            .eq('user_id_2', id2);
+
+        if (err1) {
+            return res.status(400).json({ success: false, message: err1.message });
+        }
+
+        if (existing && existing.length > 0) {
+            return res.status(400).json({ success: false, message: "Hai người đã là bạn bè rồi!" });
+        }
+
+        // 2. Nếu chưa thì Insert
+        const { data, error } = await supabase
+            .from('friendships')
+            .insert({
+                user_id_1: id1,
+                user_id_2: id2,
+                status: 'accepted'
+            });
+
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+
+        return res.status(200).json({ success: true, message: "Đã kết bạn thành công qua liên kết!" });
+    } catch (err) {
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+const getFriendsList = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        // 1. Lấy danh sách ID bạn bè từ Supabase
+        const { data: friendships, error } = await supabase
+            .from('friendships')
+            .select('*')
+            .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`)
+            .eq('status', 'accepted');
+
+        if (error) {
+            console.error("Lỗi getFriendsList từ Supabase:", error.message);
+            return res.status(400).json({ success: false, message: error.message });
+        }
+
+        console.log(`[getFriendsList] UserID: ${userId}`);
+        console.log(`[getFriendsList] friendships data:`, friendships);
+
+        if (!friendships || friendships.length === 0) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        // 2. Lọc ra mảng friend IDs
+        const friendIds = friendships.map(f => {
+            const isUser1 = (f.user_id_1 === userId);
+            console.log(`[getFriendsList] So sánh ${f.user_id_1} === ${userId} -> ${isUser1}`);
+            return isUser1 ? f.user_id_2 : f.user_id_1;
+        });
+
+        console.log(`[getFriendsList] friendIds sau khi lọc:`, friendIds);
+
+        // 3. Truy vấn MySQL lấy email, avatar và streak
+        const placeholders = friendIds.map(() => '?').join(',');
+        const query = `
+            SELECT u.id, u.email, u.avatar_url, 
+                   COALESCE(s.current_streak, 0) as streak,
+                   COALESCE(s.today_listening_time, 0) as today_listening_time
+            FROM users u
+            LEFT JOIN user_streaks s ON u.id = s.user_id
+            WHERE u.id IN (${placeholders})
+        `;
+
+        const [rows] = await db.query(query, friendIds);
+
+        // 4. Lấy trạng thái Online và bài hát đang nghe từ RAM (Socket.IO)
+        const connectedUsers = req.connectedUsers || {};
+        const enrichedRows = rows.map(user => {
+            const statusInfo = connectedUsers[user.id];
+            return {
+                ...user,
+                isOnline: statusInfo ? statusInfo.isOnline : false,
+                currentSong: statusInfo ? statusInfo.currentSong : null
+            };
+        });
+
+        return res.status(200).json({ success: true, data: enrichedRows });
+    } catch (err) {
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+const removeFriend = async (req, res) => {
+    const { userId1, userId2 } = req.body;
+    try {
+        const id1 = userId1 < userId2 ? userId1 : userId2;
+        const id2 = userId1 > userId2 ? userId1 : userId2;
+
+        const { error } = await supabase
+            .from('friendships')
+            .delete()
+            .eq('user_id_1', id1)
+            .eq('user_id_2', id2);
+
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+
+        return res.status(200).json({ success: true, message: "Đã xóa bạn bè" });
+    } catch (err) {
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 module.exports = {
     sendOtpEmail,
     verifyAndRegister,
@@ -269,5 +403,8 @@ module.exports = {
     updateProfile,
     sendOtpForgotPassword,
     verifyOtpForgotPassword,
-    updateNewPassword
+    updateNewPassword,
+    acceptFriendViaLink,
+    getFriendsList,
+    removeFriend
 };

@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicappdemo.R;
+import com.example.musicappdemo.data.RetrofitClient;
 import com.example.musicappdemo.databinding.ItemPlaylistLibraryBinding;
 import com.example.musicappdemo.model.Artist;
 import com.example.musicappdemo.ui.ArtistDetailActivity;
@@ -49,12 +50,29 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ViewHolder
         holder.binding.tvPlaylistName.setText(artist.getName());
         holder.binding.tvPlaylistInfo.setText("Nghệ sĩ");
 
-        holder.binding.ivPlaylistImg.setImageResource(R.drawable.ic_user);
-        holder.binding.ivPlaylistImg.setBackgroundResource(R.color.S20);
-        holder.binding.ivPlaylistImg.setPadding(16, 16, 16, 16);
+        String avatarUrl = RetrofitClient.getFullUrl(artist.getAvatar_url());
+        if (avatarUrl != null) {
+            com.bumptech.glide.Glide.with(context)
+                    .load(avatarUrl)
+                    .placeholder(R.drawable.ic_user)
+                    .into(holder.binding.ivPlaylistImg);
+            holder.binding.ivPlaylistImg.setPadding(0, 0, 0, 0);
+        } else {
+            holder.binding.ivPlaylistImg.setImageResource(R.drawable.ic_user);
+            holder.binding.ivPlaylistImg.setBackgroundResource(R.color.S20);
+            holder.binding.ivPlaylistImg.setPadding(16, 16, 16, 16);
+        }
 
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onArtistClick(artist);
+            if (listener != null) {
+                listener.onArtistClick(artist);
+            } else {
+                Intent intent = new Intent(context, ArtistDetailActivity.class);
+                intent.putExtra("artist_id", artist.getId());
+                intent.putExtra("artist_name", artist.getName());
+                intent.putExtra("artist_avatar", artist.getAvatar_url());
+                context.startActivity(intent);
+            }
         });
     }
 
