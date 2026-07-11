@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.musicappdemo.R;
+import com.example.musicappdemo.data.RetrofitClient;
 import com.example.musicappdemo.databinding.ItemMusicBinding;
 import com.example.musicappdemo.model.Song;
 import com.example.musicappdemo.utils.LibraryManager;
@@ -46,8 +47,9 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         holder.binding.tvLessonTitle.setText(song.getTitle());
         holder.binding.tvInfo.setText(artistName);
 
-        if (song.getCover_url() != null && !song.getCover_url().isEmpty()) {
-            Glide.with(context).load(song.getCover_url()).into(holder.binding.lessonImg);
+        String coverUrl = RetrofitClient.getFullUrl(song.getCover_url());
+        if (coverUrl != null) {
+            Glide.with(context).load(coverUrl).into(holder.binding.lessonImg);
         } else {
             holder.binding.lessonImg.setImageResource(R.drawable.placeholder_img);
         }

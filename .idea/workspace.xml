@@ -5,33 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5dcb65d0-dba3-4db8-86a2-0e9d86c31776" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/SwipeToDeleteCallback.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/drawable/bg_search_input.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/drawable/ic_delete.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/.idea/planningMode.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/.idea/planningMode.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/LessonAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/LessonAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/LessonListViewAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/LessonListViewAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/PlaylistAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/PlaylistAdapter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/ArtistAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/ArtistAdapter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/PlaylistLibraryAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/PlaylistLibraryAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/SearchResultAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/SearchResultAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/SongAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/adapter/SongAdapter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/ApiService.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/ApiService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/RetrofitClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/RetrofitClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/SessionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/data/SessionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/model/auth/SupabaseUser.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/model/auth/SupabaseUser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/model/Artist.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/model/Artist.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/model/Playlist.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/model/Playlist.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/ArtistDetailActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/ArtistDetailActivity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/LibraryFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/LibraryFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/ProfileActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/ProfileActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/LibraryManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/LibraryManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/dialog_add_artist.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/dialog_add_artist.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/fragment_library.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/fragment_library.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/item_lesson.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/item_music.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicAppBackend/config/supabase.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/config/supabase.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicAppBackend/controllers/authController.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/controllers/authController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/PlaylistDetailActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/PlaylistDetailActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/SearchFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/ui/SearchFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/MusicManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/java/com/example/musicappdemo/utils/MusicManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/activity_artist_detail.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/activity_artist_detail.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/activity_player.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/activity_player.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/activity_playlist_detail.xml" beforeDir="false" afterPath="$PROJECT_DIR$/MusicApp/app/src/main/res/layout/activity_playlist_detail.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusicAppBackend/controllers/libraryController.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/controllers/libraryController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicAppBackend/controllers/songController.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/controllers/songController.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MusicAppBackend/routes/libraryRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/routes/libraryRoutes.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MusicAppBackend/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MusicAppBackend/routes/songRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/MusicAppBackend/routes/songRoutes.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,21 +58,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;emulator&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "libary",
+    "kotlin-language-version-configured": "true",
+    "settings.editor.selected.configurable": "emulator"
   }
-}</component>
+}]]></component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="5dcb65d0-dba3-4db8-86a2-0e9d86c31776" name="Changes" comment="" />

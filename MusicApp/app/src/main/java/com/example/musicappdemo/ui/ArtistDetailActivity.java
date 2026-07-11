@@ -6,6 +6,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.bumptech.glide.Glide;
+import com.example.musicappdemo.R;
 import com.example.musicappdemo.adapter.SearchResultAdapter;
 import com.example.musicappdemo.databinding.ActivityArtistDetailBinding;
 import com.example.musicappdemo.model.Song;
@@ -25,6 +27,7 @@ public class ArtistDetailActivity extends AppCompatActivity {
     private SearchResultAdapter adapter;
     private List<Song> artistSongs = new ArrayList<>();
     private String artistName;
+    private String artistAvatar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,13 +36,31 @@ public class ArtistDetailActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         artistName = getIntent().getStringExtra("artist_name");
+        artistAvatar = getIntent().getStringExtra("artist_avatar");
+
         if (artistName == null) {
             finish();
             return;
         }
 
-        binding.tvArtistName.setText(artistName);
+        binding.tvArtistNameLarge.setText(artistName);
         binding.btnBack.setOnClickListener(v -> finish());
+
+        if (artistAvatar != null && !artistAvatar.isEmpty()) {
+            Glide.with(this)
+                    .load(RetrofitClient.getFullUrl(artistAvatar))
+                    .placeholder(R.drawable.placeholder_img)
+                    .into(binding.ivArtistHeader);
+        }
+
+        binding.fabPlayArtist.setOnClickListener(v -> {
+            if (!artistSongs.isEmpty()) {
+                com.example.musicappdemo.utils.MusicManager.getInstance().playPlaylist(this, artistSongs, 0);
+                Toast.makeText(this, "Đang phát nhạc của " + artistName, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Nghệ sĩ chưa có bài hát nào", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         setupRecyclerView();
         fetchSongs();

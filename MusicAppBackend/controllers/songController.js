@@ -177,8 +177,19 @@ const deleteSong = async (req, res) => {
     }
 };
 
+const incrementView = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query('UPDATE songs SET views = views + 1 WHERE id = ?', [id]);
+        res.status(200).json({ success: true, message: "View incremented" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     getAllSongs,
     saveSong,
-    deleteSong
+    deleteSong,
+    incrementView
 };

@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicappdemo.R;
+import com.example.musicappdemo.data.RetrofitClient;
 import com.example.musicappdemo.databinding.ItemPlaylistLibraryBinding;
 import com.example.musicappdemo.model.Playlist;
 
@@ -43,9 +44,18 @@ public class PlaylistLibraryAdapter extends RecyclerView.Adapter<PlaylistLibrary
         int count = playlist.getSongs() != null ? playlist.getSongs().size() : 0;
         holder.binding.tvPlaylistInfo.setText("Playlist • " + count + " bài hát");
 
-        holder.binding.ivPlaylistImg.setImageResource(R.drawable.ic_music_note);
-        holder.binding.ivPlaylistImg.setBackgroundResource(R.color.S20);
-        holder.binding.ivPlaylistImg.setPadding(16, 16, 16, 16);
+        String coverUrl = RetrofitClient.getFullUrl(playlist.getCover_url());
+        if (coverUrl != null) {
+            com.bumptech.glide.Glide.with(context)
+                    .load(coverUrl)
+                    .placeholder(R.drawable.ic_music_note)
+                    .into(holder.binding.ivPlaylistImg);
+            holder.binding.ivPlaylistImg.setPadding(0, 0, 0, 0);
+        } else {
+            holder.binding.ivPlaylistImg.setImageResource(R.drawable.ic_music_note);
+            holder.binding.ivPlaylistImg.setBackgroundResource(R.color.S20);
+            holder.binding.ivPlaylistImg.setPadding(16, 16, 16, 16);
+        }
 
         holder.itemView.setOnClickListener(v -> listener.onPlaylistClick(playlist));
     }

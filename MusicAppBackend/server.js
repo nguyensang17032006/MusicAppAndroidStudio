@@ -85,6 +85,7 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
+app.use('/uploads', express.static('uploads'));
 
 
 const songRoutes = require('./routes/songRoutes');

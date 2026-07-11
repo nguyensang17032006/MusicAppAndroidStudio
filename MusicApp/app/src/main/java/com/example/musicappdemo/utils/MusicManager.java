@@ -8,12 +8,18 @@ import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
+import com.example.musicappdemo.data.RetrofitClient;
+import com.example.musicappdemo.data.SimpleResponse;
 import com.example.musicappdemo.model.Song;
 import com.example.musicappdemo.services.MusicService;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MusicManager {
     private static MusicManager instance;
@@ -162,6 +168,9 @@ public class MusicManager {
                 return true; // Handle error and prevent triggering onCompletion
             });
             mediaPlayer.setOnCompletionListener(mp -> {
+                // Tăng view khi nghe hết bài
+                if (currentSong != null) {
+                    incrementSongView(currentSong.getId());
                 try {
                     int currentPos = mp.getCurrentPosition();
                     int duration = mp.getDuration();
@@ -326,5 +335,20 @@ public class MusicManager {
                 Log.e("MusicManager", "seekTo error: " + e.getMessage());
             }
         }
+    }
+
+    private void incrementSongView(String songId) {
+        RetrofitClient.getApiService().incrementView(songId).enqueue(new Callback<SimpleResponse<Void>>() {
+            @Override
+            public void onResponse(Call<SimpleResponse<Void>> call, Response<SimpleResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    Log.d("MusicManager", "View incremented for song: " + songId);
+                }
+            }
+            @Override
+            public void onFailure(Call<SimpleResponse<Void>> call, Throwable t) {
+                Log.e("MusicManager", "Failed to increment view: " + t.getMessage());
+            }
+        });
     }
 }

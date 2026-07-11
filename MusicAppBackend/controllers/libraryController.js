@@ -207,6 +207,19 @@ const addSongToPlaylist = async (req, res) => {
     }
 };
 
+const updatePlaylistCover = async (req, res) => {
+    const { playlistId, coverUrl } = req.body;
+    if (!playlistId || !coverUrl) {
+        return res.status(400).json({ success: false, message: "Missing playlistId or coverUrl" });
+    }
+    try {
+        await db.query('UPDATE playlists SET cover_url = ? WHERE id = ?', [coverUrl, playlistId]);
+        res.status(200).json({ success: true, message: 'Playlist cover updated successfully' });
+    } catch (error) {
+        console.error("Error in updatePlaylistCover:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
 
 // FOLLOWED ARTISTS
 const getFollowedArtists = async (req, res) => {
@@ -279,6 +292,7 @@ module.exports = {
     createPlaylist,
     deletePlaylist,
     addSongToPlaylist,
+    updatePlaylistCover,
     getFollowedArtists,
     toggleFollowArtist
 };

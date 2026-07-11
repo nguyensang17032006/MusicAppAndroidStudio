@@ -5,16 +5,16 @@ import java.io.Serializable;
 public class Artist implements Serializable {
     private String id;
     private String name;
-    private String image_url;
+    private String avatar_url;
     private long addedTime;
     private boolean is_main_artist;
 
     public Artist() {}
 
-    public Artist(String id, String name, String image_url, long addedTime, boolean is_main_artist) {
+    public Artist(String id, String name, String avatar_url, long addedTime, boolean is_main_artist) {
         this.id = id;
         this.name = name;
-        this.image_url = image_url;
+        this.avatar_url = avatar_url;
         this.addedTime = addedTime;
         this.is_main_artist = is_main_artist;
     }
@@ -35,12 +35,12 @@ public class Artist implements Serializable {
         this.name = name;
     }
 
-    public String getImage_url() {
-        return image_url;
+    public String getAvatar_url() {
+        return avatar_url;
     }
 
-    public void setImage_url(String image_url) {
-        this.image_url = image_url;
+    public void setAvatar_url(String avatar_url) {
+        this.avatar_url = avatar_url;
     }
 
     public long getAddedTime() {
