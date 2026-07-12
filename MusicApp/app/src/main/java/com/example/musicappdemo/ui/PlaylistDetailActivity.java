@@ -21,6 +21,7 @@ import com.example.musicappdemo.data.RetrofitClient;
 import com.example.musicappdemo.data.SimpleResponse;
 import com.example.musicappdemo.databinding.ActivityPlaylistDetailBinding;
 import com.example.musicappdemo.model.Song;
+import com.example.musicappdemo.model.UploadResponse;
 import com.example.musicappdemo.utils.LibraryManager;
 import com.example.musicappdemo.utils.MusicManager;
 
@@ -287,8 +288,10 @@ public class PlaylistDetailActivity extends AppCompatActivity implements MusicMa
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
             MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
 
+            RetrofitClient.getApiService().uploadFile(body).enqueue(new Callback<UploadResponse>() {
             RetrofitClient.getApiService().uploadFile(body).enqueue(new Callback<com.example.musicappdemo.model.UploadResponse>() {
                 @Override
+                public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
                 public void onResponse(Call<com.example.musicappdemo.model.UploadResponse> call, Response<com.example.musicappdemo.model.UploadResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         Log.d("PlaylistDetail", "Upload Success: " + response.body().getFileUrl());
@@ -307,6 +310,7 @@ public class PlaylistDetailActivity extends AppCompatActivity implements MusicMa
 
                 @Override
                 public void onFailure(Call<com.example.musicappdemo.model.UploadResponse> call, Throwable t) {
+                public void onFailure(Call<UploadResponse> call, Throwable t) {
                     Log.e("PlaylistDetail", "Upload Network Error", t);
                     Toast.makeText(PlaylistDetailActivity.this, "Lỗi kết nối upload: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
