@@ -26,7 +26,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ArtistDetailActivity extends AppCompatActivity implements com.example.musicappdemo.utils.MusicManager.OnMusicStatusListener {
 public class ArtistDetailActivity extends AppCompatActivity implements MusicManager.OnMusicStatusListener {
 
     private ActivityArtistDetailBinding binding;
@@ -37,8 +36,6 @@ public class ArtistDetailActivity extends AppCompatActivity implements MusicMana
     private Handler progressHandler = new Handler();
     private Runnable progressRunnable;
 
-    private android.os.Handler progressHandler = new android.os.Handler();
-    private Runnable progressRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,29 +134,6 @@ public class ArtistDetailActivity extends AppCompatActivity implements MusicMana
         } else {
             binding.miniPlayer.miniPlayerContainer.setVisibility(android.view.View.GONE);
         }
-    }
-
-    @Override
-    public void onSongChanged(Song song) {
-        updateMiniPlayerUI();
-    }
-
-    @Override
-    public void onStatusChanged(boolean isPlaying) {
-        binding.miniPlayer.miniPlayerPlay.setImageResource(isPlaying ? R.drawable.ic_pause : R.drawable.ic_play);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        MusicManager.getInstance().setListener(this);
-        updateMiniPlayerUI();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        progressHandler.removeCallbacks(progressRunnable);
     }
 
     private void setupRecyclerView() {

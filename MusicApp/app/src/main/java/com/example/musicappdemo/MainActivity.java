@@ -16,7 +16,6 @@ import com.example.musicappdemo.ui.LibraryFragment;
 import com.example.musicappdemo.ui.SearchFragment;
 import com.example.musicappdemo.utils.MusicManager;
 import com.example.musicappdemo.data.SessionManager;
-import com.example.musicappdemo.data.RetrofitClient;
 import com.example.musicappdemo.data.SimpleResponse;
 
 import java.util.HashMap;
@@ -87,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
         });
 
         // Xử lý khi click vào Mini Player
-        binding.miniPlayer.miniPlayerContainer.setOnClickListener(v -> {
         binding.miniPlayer.getRoot().setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, PlayerActivity.class));
         });
@@ -188,10 +186,8 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
 
     private void updateMiniPlayerVisibility() {
         if (MusicManager.getInstance().getCurrentSong() != null) {
-            binding.miniPlayer.miniPlayerContainer.setVisibility(android.view.View.VISIBLE);
             binding.miniPlayer.getRoot().setVisibility(android.view.View.VISIBLE);
         } else {
-            binding.miniPlayer.miniPlayerContainer.setVisibility(android.view.View.GONE);
             binding.miniPlayer.getRoot().setVisibility(android.view.View.GONE);
         }
     }
@@ -208,7 +204,6 @@ public class MainActivity extends AppCompatActivity implements MusicManager.OnMu
             binding.miniPlayer.miniPlayerTitle.setText(song.getTitle());
             binding.miniPlayer.miniPlayerArtist.setText(artistName);
             if (song.getCover_url() != null && !song.getCover_url().isEmpty()) {
-                Glide.with(this).load(song.getCover_url()).into(binding.miniPlayer.miniPlayerImg);
                 Glide.with(this).load(RetrofitClient.getFullUrl(song.getCover_url())).into(binding.miniPlayer.miniPlayerImg);
             } else {
                 binding.miniPlayer.miniPlayerImg.setImageResource(R.drawable.placeholder_img);
