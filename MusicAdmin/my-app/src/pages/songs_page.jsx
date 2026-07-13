@@ -4,40 +4,6 @@ import { RotateCcw } from "lucide-react";
 import SongForm from "../components/songs/song_form.jsx";
 import SongTable from "../components/songs/song_table.jsx";
 
-// Initial seed values for offline fallback
-const SEED_SONGS = [
-    {
-        id: "S001",
-        title: "Lạc Trôi",
-        file_url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-        cover_url: "https://upload.wikimedia.org/wikipedia/vi/a/a2/Lactroi.jpg",
-        duration: 292,
-        views: 120450,
-        artists: [
-            { artist_id: "A001", name: "Sơn Tùng M-TP", is_main_artist: true }
-        ],
-        genres: [
-            { genre_id: "G001", name: "Pop-Ballad" }
-        ],
-        created_at: new Date().toISOString()
-    },
-    {
-        id: "S002",
-        title: "Trốn Tìm",
-        file_url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-        cover_url: "https://upload.wikimedia.org/wikipedia/vi/c/c8/Tr%E1%BB%91n_T%C3%ACm_-_Rapper_%C4%90en_V%C3%A2u.png",
-        duration: 250,
-        views: 89400,
-        artists: [
-            { artist_id: "A002", name: "Đen Vâu", is_main_artist: true }
-        ],
-        genres: [
-            { genre_id: "G002", name: "Indie-Pop" }
-        ],
-        created_at: new Date().toISOString()
-    }
-];
-
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const API_SONGS_URL = `${API_BASE}/api/songs`;
 const API_ARTISTS_URL = `${API_BASE}/api/artists`;
@@ -62,7 +28,7 @@ export default function SongsPage() {
     const [songs, setSongs] = useState([]);
     const [artists, setArtists] = useState([]); // Loaded from MySQL to populate selectors
     const [genres, setGenres] = useState([]);   // Loaded from MySQL to populate selectors
-    
+
     const [editingSong, setEditingSong] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
@@ -72,7 +38,7 @@ export default function SongsPage() {
     const fetchData = async () => {
         setIsLoading(true);
         setErrorMsg('');
-        
+
         try {
             // 1. Fetch Artists list
             console.log(`Loading artists from ${API_ARTISTS_URL}`);
@@ -106,7 +72,7 @@ export default function SongsPage() {
 
         } catch (error) {
             console.warn("Backend offline. Loading local localStorage backups instead.", error);
-            
+
             // Fallback load artists
             const localArtists = localStorage.getItem('music_admin_artists');
             setArtists(localArtists ? JSON.parse(localArtists) : []);
@@ -120,7 +86,7 @@ export default function SongsPage() {
             if (localSongs) {
                 try {
                     setSongs(JSON.parse(localSongs));
-                } catch(e) {
+                } catch (e) {
                     setSongs(SEED_SONGS);
                 }
             } else {
@@ -181,7 +147,7 @@ export default function SongsPage() {
             const result = await res.json();
             setSuccessMsg(result.message || 'Saved successfully to MySQL database!');
             setEditingSong(null);
-            
+
             // Reload updated database lists
             await fetchData();
         } catch (error) {
@@ -193,15 +159,15 @@ export default function SongsPage() {
                 // Update local state
                 setSongs(prev => prev.map(s =>
                     s.id === editingSong.id
-                        ? { 
-                            ...s, 
-                            title: localBackupData.title, 
+                        ? {
+                            ...s,
+                            title: localBackupData.title,
                             duration: localBackupData.duration,
                             cover_url: localBackupData.cover_url || s.cover_url,
                             file_url: localBackupData.file_url || s.file_url,
                             artists: localBackupData.artists,
                             genres: localBackupData.genres
-                          }
+                        }
                         : s
                 ));
                 setEditingSong(null);
@@ -247,7 +213,7 @@ export default function SongsPage() {
             if (editingSong && editingSong.id === id) {
                 setEditingSong(null);
             }
-            
+
             // Refresh
             await fetchData();
         } catch (error) {
@@ -306,7 +272,7 @@ export default function SongsPage() {
 
             {/* Layout Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
+
                 {/* Form Card (1 col on lg) */}
                 <div className="lg:col-span-1">
                     <SongForm

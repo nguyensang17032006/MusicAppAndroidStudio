@@ -13,19 +13,14 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/miniPlayer"
-        app:layout_constraintBottom_toTopOf="@+id/mini_player"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <include
-        android:id="@+id/mini_player"
-        layout="@layout/layout_mini_player"
-    <include
         android:id="@+id/miniPlayer"
         layout="@layout/mini_player"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"
