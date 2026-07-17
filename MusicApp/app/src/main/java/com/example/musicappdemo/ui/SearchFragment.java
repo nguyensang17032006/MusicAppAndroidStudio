@@ -125,6 +125,7 @@ public class SearchFragment extends Fragment {
                 Intent intent = new Intent(getActivity(), PlaylistDetailActivity.class);
                 intent.putExtra("playlist_title", genre.getName());
                 intent.putExtra("playlist_songs", genreSongs);
+                intent.putExtra("is_genre", true);
                 startActivity(intent);
             } else {
                 Toast.makeText(getContext(), "Không có bài hát nào thuộc thể loại này", Toast.LENGTH_SHORT).show();

@@ -57,16 +57,13 @@ public class ChatActivity extends AppCompatActivity {
         if (friendName != null) {
             tvChatName.setText(friendName);
         } else {
-            // Nếu mở từ Notification, friendName sẽ null -> cần gọi API lấy tên
             fetchFriendName();
         }
 
         rvChat = findViewById(R.id.rv_chat);
         etMessage = findViewById(R.id.et_message);
 
-        // Hide placeholder text
         TextView placeholder = findViewById(R.id.tv_chat_name); 
-        // Actually, the placeholder text doesn't have an ID in XML, let's ignore it or the adapter will cover it.
 
         chatAdapter = new ChatAdapter(myUserId);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -125,7 +122,6 @@ public class ChatActivity extends AppCompatActivity {
                 data.put("message", messageText);
                 mSocket.emit("send_message", data);
                 
-                // Add message to local view instantly for better UX
                 ChatMessage newMsg = new ChatMessage(myUserId, friendId, messageText);
                 chatAdapter.addMessage(newMsg);
                 rvChat.scrollToPosition(chatAdapter.getItemCount() - 1);
@@ -149,7 +145,6 @@ public class ChatActivity extends AppCompatActivity {
                         String receiverId = data.getString("receiver_id");
                         String messageText = data.getString("message_text");
 
-                        // If the message is from the friend we are currently chatting with
                         if (senderId.equals(friendId) && receiverId.equals(myUserId)) {
                             ChatMessage newMsg = new ChatMessage(senderId, receiverId, messageText);
                             chatAdapter.addMessage(newMsg);

@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -26,7 +25,6 @@ import com.example.musicappdemo.data.RetrofitClient;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import retrofit2.Call;
@@ -57,7 +55,6 @@ public class HomeFragment extends Fragment {
         String email = com.example.musicappdemo.data.SessionManager.get(getContext()).getEmail();
         if (email != null && !email.isEmpty()) {
             String name = email.split("@")[0];
-            // Viết hoa chữ cái đầu cho đẹp
             if (name.length() > 0) {
                 name = name.substring(0, 1).toUpperCase() + name.substring(1);
             }
@@ -103,6 +100,7 @@ public class HomeFragment extends Fragment {
 
     private void fetchSongs() {
         RetrofitClient.getApiService().getSongs().enqueue(new Callback<SimpleResponse<List<Song>>>() {
+
             @Override
             public void onResponse(Call<SimpleResponse<List<Song>>> call, Response<SimpleResponse<List<Song>>> response) {
                 if (binding == null || getContext() == null) return;
@@ -112,18 +110,16 @@ public class HomeFragment extends Fragment {
 
                     if (allSongs != null) {
                         com.example.musicappdemo.utils.MusicManager.getInstance().setAllSongs(allSongs);
-                        // 1. Bài nhạc mới nhất (Giới hạn 5 bài)
                         List<Song> latestSongs = new ArrayList<>(allSongs);
-                        // Giả sử bài mới nhất nằm ở cuối list hoặc có thuộc tính ngày tháng, ở đây ta lấy 5 bài đầu/cuối
-                        // Nếu list trả về là mới nhất trước thì lấy 5 bài đầu
+                        Collections.reverse(latestSongs);
                         if (latestSongs.size() > 5) {
                             latestSongs = latestSongs.subList(0, 5);
                         }
+
                         SongAdapter latestAdapter = new SongAdapter(getContext(), latestSongs);
                         binding.lvLatestLessons.setAdapter(latestAdapter);
                         setListViewHeightBasedOnChildren(binding.lvLatestLessons);
 
-                        // 2. Bài nhạc nghe nhiều (Sắp xếp theo views và lấy 10 bài)
                         List<Song> featuredSongs = new ArrayList<>(allSongs);
                         Collections.sort(featuredSongs, (s1, s2) -> Integer.compare(s2.getViews(), s1.getViews()));
                         if (featuredSongs.size() > 10) {
