@@ -19,6 +19,7 @@ import com.example.musicappdemo.data.ApiService;
 import com.example.musicappdemo.data.RetrofitClient;
 import com.example.musicappdemo.data.SessionManager;
 import com.example.musicappdemo.data.SimpleResponse;
+import com.example.musicappdemo.data.SocketManager;
 import com.example.musicappdemo.databinding.FragmentFriendBinding;
 import com.example.musicappdemo.model.Friend;
 
@@ -48,7 +49,7 @@ public class FriendFragment extends Fragment {
 
         setupRecyclerView();
 
-        com.example.musicappdemo.data.SocketManager.getInstance().getSocket().on("friend_status_changed", args -> {
+        SocketManager.getInstance().getSocket().on("friend_status_changed", args -> {
             if (args.length > 0) {
                 try {
                     org.json.JSONObject data = (org.json.JSONObject) args[0];
@@ -221,7 +222,7 @@ public class FriendFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // Tự động tải lại danh sách bạn bè mỗi khi màn hình này hiển thị lại
+
         loadFriends();
     }
 

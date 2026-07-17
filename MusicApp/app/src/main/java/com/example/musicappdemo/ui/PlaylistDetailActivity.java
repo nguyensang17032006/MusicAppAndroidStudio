@@ -77,12 +77,18 @@ public class PlaylistDetailActivity extends AppCompatActivity implements MusicMa
         if (title != null) binding.tvPlaylistTitle.setText(title);
         if (songs != null) songList.addAll(songs);
 
-        // Xử lý riêng cho Liked Songs: Không cho đổi ảnh, dùng icon mặc định
+        boolean isGenre = getIntent().getBooleanExtra("is_genre", false);
+
+        // Xử lý riêng cho Liked Songs hoặc Thể loại: Không cho đổi ảnh, dùng icon mặc định
         if (title != null && title.equalsIgnoreCase("Liked Songs")) {
             binding.btnChangeCover.setVisibility(android.view.View.GONE);
-            binding.ivPlaylistCover.setImageResource(R.drawable.ic_music_note);
+            binding.ivPlaylistCover.setImageResource(R.drawable.ic_heart);
             binding.ivPlaylistCover.setBackgroundResource(R.color.S20);
             binding.ivPlaylistCover.setPadding(60, 60, 60, 60); // Padding lớn cho icon nốt nhạc
+        } else if (isGenre) {
+            binding.btnChangeCover.setVisibility(android.view.View.GONE);
+            binding.ivPlaylistCover.setBackgroundResource(R.color.S20);
+            binding.ivPlaylistCover.setPadding(60, 60, 60, 60);
         } else if (coverUrl != null && !coverUrl.isEmpty()) {
             Glide.with(this)
                     .load(RetrofitClient.getFullUrl(coverUrl))
